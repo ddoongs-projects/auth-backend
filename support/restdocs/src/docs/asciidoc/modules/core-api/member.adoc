@@ -1,0 +1,23 @@
+== 멤버 관련 API
+
+=== 현재 팀원 목록 조회
+operation::core-api/find-members[snippets='http-request,path-parameters,http-response,response-fields']
+
+
+=== 초대 팀원 목록 조회
+operation::core-api/find-invitation-members[snippets='http-request,path-parameters,http-response,response-fields']
+
+=== 팀원 초대
+operation::core-api/append-Invitation[snippets='http-request,path-parameters,request-fields,http-response,response-fields']
+
+=== 팀 나가기
+operation::core-api/leave-project[snippets='http-request,path-parameters,http-response,response-fields']
+
+=== 초대 팀원 삭제
+operation::core-api/delete-invitation-member[snippets='http-request,path-parameters,http-response,response-fields']
+
+=== 현재 팀원 삭제
+operation::core-api/delete-member[snippets='http-request,path-parameters,http-response,response-fields']
+
+=== 초대 수락
+operation::core-api/accept-invitation[snippets='http-request,path-parameters,http-response,response-fields']

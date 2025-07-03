@@ -1,0 +1,58 @@
+== User 관련 API
+
+=== 인증 번호 요청
+
+operation::auth/request-verification[snippets='http-request,request-fields,http-response,response-fields']
+
+=== 인증 번호 확인
+
+operation::auth/verify-verification[snippets='http-request,request-fields,http-response,response-fields']
+
+=== 회원가입
+
+신규 User 객체를 생성하고 고유 식별자 및 속성 정보를 반환합니다.
+
+operation::auth/append-user[snippets='http-request,request-fields,http-response,response-fields']
+
+=== 본인 회원 정보 조회
+
+사용자 본인의 상세 정보를 조회합니다.
+
+operation::auth/find-me[snippets='http-request,http-response,response-fields']
+
+
+=== 아이디 중복 확인
+
+사용자가 입력한 아이디가 이미 존재하는 아이디인지 확인합니다.
+
+operation::auth/check-username[snippets='http-request,query-parameters,response-body,response-fields']
+
+=== 닉네임 중복 확인
+
+사용자가 입력한 닉네임이 이미 존재하는 닉네임인지 확인합니다.
+
+operation::auth/check-nickname[snippets='http-request,query-parameters,response-body,response-fields']
+
+=== 닉네임 변경
+
+user 객체의 이름을 업데이트합니다.
+
+operation::auth/modify-nickname[snippets='http-request,request-fields,http-response,response-fields']
+
+=== 비밀번호 변경
+
+user 객체의 비밀번호를 업데이트합니다.
+
+operation::auth/modify-password[snippets='http-request,request-fields,http-response,response-fields']
+
+=== 비밀번호 초기화
+
+user 객체의 비밀번호를 업데이트합니다.
+
+operation::auth/reset-password[snippets='http-request,request-fields,http-response,response-fields']
+
+=== 프로필 변경
+
+user 객체의 프로필을 업데이트합니다.
+
+operation::auth/modify-profile-image[snippets='http-request,request-parts,http-response,response-fields']

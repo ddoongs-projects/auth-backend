@@ -1,0 +1,46 @@
+== 스프린트 관련 API
+
+=== 스프린트 등록
+
+operation::core-api/append-sprint[snippets='http-request,path-parameters,request-fields,http-response,response-fields']
+
+=== 스프린트 목록 조회
+
+operation::core-api/find-sprints[snippets='http-request,path-parameters,http-response,response-fields']
+
+=== 스프린트 이름 수정
+
+operation::core-api/modify-sprint-name[snippets='http-request,path-parameters,request-fields,http-response,response-fields']
+
+=== 스프린트 삭제
+
+operation::core-api/delete-sprint[snippets='http-request,path-parameters,request-fields,http-response,response-fields']
+
+=== 스프린트 예상 종료일 수정
+
+operation::core-api/modify-sprint-dueDate[snippets='http-request,path-parameters,request-fields,http-response,response-fields']
+
+=== [미구현] 스프린트 시작
+
+스프린트가 시작되면
+스프린트의 상태가 진행중으로 바뀜
+
+operation::core-api/start-sprint[snippets='http-request,path-parameters,request-fields,http-response,response-fields']
+
+=== [미구현] 스프린트 종료
+
+스프린트가 종료되면
+
+1. 스프린트의 상태가 complete로 바뀌고
+2. 스프린트의 종료일에 종료 당일 날짜가 업데이트 됨.
+
+operation::core-api/complete-sprint[snippets='http-request,path-parameters,request-fields,http-response,response-fields']
+
+=== [미구현] 활성 스프린트내에 이슈 이동
+
+이동할때
+
+1. 옮길 위치의 이전 이슈 아이디가 존재하면 이슈 아이디만 포함되도록 요청
+2. 이전 이슈 아이디가 없으면 컴포넌트, 이슈 상태 둘 다 포함해서 요청
+
+operation::core-api/move-sprint-issue[snippets='http-request,path-parameters,request-fields,http-response,response-fields']

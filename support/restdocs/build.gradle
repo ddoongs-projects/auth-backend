@@ -1,0 +1,68 @@
+plugins {
+    id 'org.asciidoctor.jvm.convert'
+}
+
+bootJar.enabled = false
+jar.enabled = false
+
+configurations {
+    asciidoctorExt
+}
+
+dependencies {
+    asciidoctorExt 'org.springframework.restdocs:spring-restdocs-asciidoctor'
+}
+
+// 다른 모듈의 스니펫과 adoc 파일을 복사하는 태스크
+task copyDocsResources {
+    doFirst {
+        delete "${projectDir}/src/docs/asciidoc/modules"
+        delete "${projectDir}/build/generated-snippets"
+    }
+    rootProject.subprojects.each { subproject ->
+        if (subproject.name != 'restdocs') {
+            dependsOn subproject.tasks.restDocsTest
+        }
+    }
+    doLast {
+        // 모든 모듈의 adoc 파일 복사 및 경로 수정
+        rootProject.subprojects.each { subproject ->
+            if (subproject.name != 'restdocs' && file("${subproject.projectDir}/src/docs/asciidoc").exists()) {
+                copy {
+                    from("${subproject.projectDir}/src/docs/asciidoc") {
+                        include "**/*.adoc"
+                        exclude "index.adoc"
+                    }
+                    into "${projectDir}/src/docs/asciidoc/modules/${subproject.name}"
+
+                    // 필터를 사용하여 스니펫 경로 업데이트
+                    filter { line ->
+                        line.replaceAll(
+                                'operation::([^\\[]+)',
+                                "operation::${subproject.name}/\$1"
+                        )
+                    }
+                }
+            }
+
+            // 스니펫 복사
+            if (subproject.name != 'restdocs' && file("${subproject.buildDir}/generated-snippets").exists()) {
+                copy {
+                    from "${subproject.buildDir}/generated-snippets"
+                    into "build/generated-snippets/${subproject.name}"
+                }
+            }
+        }
+    }
+}
+
+// AsciiDoctor 태스크 설정
+asciidoctor {
+    configurations 'asciidoctorExt'
+    dependsOn copyDocsResources
+    baseDirFollowsSourceFile()
+    attributes 'snippets': file('build/generated-snippets')
+    sources {
+        include "index.adoc"
+    }
+}

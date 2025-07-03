@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# 스테이징된 Java 파일 목록을 안전하게 배열에 저장
+STAGED_FILES=()
+while IFS= read -r line; do
+    [[ -n "$line" ]] && STAGED_FILES+=("$line")
+done < <(git diff --cached --name-only --diff-filter=ACMR | grep '\.java$' || true)
+
+if [ ${#STAGED_FILES[@]} -eq 0 ]; then
+    echo "✅ 스테이징된 Java 파일이 없습니다!"
+    exit 0
+fi
+
+# 중복 제거를 위한 일반 배열 사용
+MODULES_LIST=()
+
+for FILE in "${STAGED_FILES[@]}"; do
+    if [[ "$FILE" == *"/src/main/java/"* ]]; then
+        MODULE_PATH=$(echo "$FILE" | sed -E 's|/src/main/java/.*||')
+        if [ -n "$MODULE_PATH" ]; then
+            MODULE=":${MODULE_PATH//\//:}"
+        else
+            MODULE=":"
+        fi
+
+        # 중복 체크
+        if [[ ${#MODULES_LIST[@]} -eq 0 ]] || ! printf '%s\n' "${MODULES_LIST[@]}" | grep -q "^${MODULE}$"; then
+            MODULES_LIST+=("$MODULE")
+        fi
+    fi
+done
+
+for FILE in "${STAGED_FILES[@]}"; do
+    if [[ "$FILE" == *"/src/test/java/"* ]]; then
+        MODULE_PATH=$(echo "$FILE" | sed -E 's|/src/test/java/.*||')
+        if [ -n "$MODULE_PATH" ]; then
+            MODULE=":${MODULE_PATH//\//:}"
+        else
+            MODULE=":"
+        fi
+
+        # 중복 체크
+        if [[ ${#MODULES_LIST[@]} -eq 0 ]] || ! printf '%s\n' "${MODULES_LIST[@]}" | grep -q "^${MODULE}$"; then
+            MODULES_LIST+=("$MODULE")
+        fi
+    fi
+done
+
+if [ ${#MODULES_LIST[@]} -eq 0 ]; then
+    echo "⚠️ Spotless 포매팅에 사용할 모듈을 찾을 수 없습니다!"
+    exit 0
+fi
+
+UNIQUE_MODULES=()
+for MODULE in "${MODULES_LIST[@]}"; do
+    UNIQUE_MODULES+=("${MODULE}:spotlessApply")
+done
+
+echo "🚀 Spotless를 다음 모듈에 대해 실행합니다: ${UNIQUE_MODULES[*]}"
+(./gradlew "${UNIQUE_MODULES[@]}")
+
+git add "${STAGED_FILES[@]}"
+echo "✅ 스테이징된 파일에 대해 포맷팅을 완료하였습니다!"
+exit 0

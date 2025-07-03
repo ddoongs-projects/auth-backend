@@ -1,0 +1,14 @@
+dependencies {
+    implementation 'io.micrometer:micrometer-tracing-bridge-brave'
+    implementation "io.sentry:sentry-logback:${property("sentryVersion")}"
+}
+
+tasks.withType(ProcessResources).configureEach {
+    filesMatching('logback-*.xml') {
+        def projectGroupValue = project.findProperty('projectGroup')
+        if (projectGroupValue == null) {
+            throw new GradleException("projectGroup is not defined in gradle.properties!")
+        }
+        expand(projectGroup: projectGroupValue)
+    }
+}

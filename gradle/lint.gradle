@@ -1,0 +1,15 @@
+subprojects {
+    def hasJavaSrc = project.file("src/main/java").exists()
+
+    if (hasJavaSrc) {
+        apply plugin: 'com.diffplug.spotless'
+
+        spotless {
+            java {
+                palantirJavaFormat('2.55.0')
+                    .style("GOOGLE")
+                formatAnnotations()
+            }
+        }
+    }
+}
