@@ -3,12 +3,24 @@ package com.ddoongs.auth.domain;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
 
 class MemberTest {
 
   private PasswordEncoder passwordEncoder;
+
+  static Stream<Arguments> provideNullForRegister() {
+    return Stream.of(
+        Arguments.of(new RegisterMember(null, "123asd!@#")),
+        Arguments.of(new RegisterMember("duk9741@gmail.com", null)),
+        Arguments.of(new RegisterMember(null, null)));
+  }
 
   @BeforeEach
   void setup() {
@@ -24,38 +36,22 @@ class MemberTest {
     assertThat(member.getPassword().getPasswordHash()).isNotEqualTo(registerMember.password());
   }
 
-  @Test
-  void registerFail() {
-
-    assertThatThrownBy(
-            () -> Member.register(new RegisterMember(null, "123asd!@#"), passwordEncoder))
-        .isInstanceOf(NullPointerException.class);
-
-    assertThatThrownBy(
-            () -> Member.register(new RegisterMember("duk9741@gmail.com", null), passwordEncoder))
-        .isInstanceOf(NullPointerException.class);
-
-    assertThatThrownBy(() -> Member.register(new RegisterMember(null, null), passwordEncoder))
+  @ParameterizedTest
+  @MethodSource("provideNullForRegister")
+  void registerFail(RegisterMember registerMember) {
+    assertThatThrownBy(() -> Member.register(registerMember, passwordEncoder))
         .isInstanceOf(NullPointerException.class);
   }
 
-  @Test
-  void registerFailInvalidValue() {
-
-    assertThatThrownBy(
-            () -> Member.register(new RegisterMember("duk9741", "123asd!@#"), passwordEncoder))
-        .isInstanceOf(IllegalArgumentException.class);
-
-    assertThatThrownBy(
-            () -> Member.register(new RegisterMember("@gmail.com", "123asd!@#"), passwordEncoder))
-        .isInstanceOf(IllegalArgumentException.class);
-
-    assertThatThrownBy(
-            () -> Member.register(new RegisterMember("duk9741@gmail.com", "123"), passwordEncoder))
-        .isInstanceOf(IllegalArgumentException.class);
-
-    assertThatThrownBy(
-            () -> Member.register(new RegisterMember("gmail.com", "123"), passwordEncoder))
+  @ParameterizedTest
+  @CsvSource({
+    "duk9741, 123asd!@#",
+    "@gmail.com, 123asd!@#",
+    "duk9741@gmail.com, 123",
+    "gmail.com, 123"
+  })
+  void registerFailInvalidValue(String email, String password) {
+    assertThatThrownBy(() -> Member.register(new RegisterMember(email, password), passwordEncoder))
         .isInstanceOf(IllegalArgumentException.class);
   }
 }

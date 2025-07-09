@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class EmailTest {
 
@@ -13,10 +15,9 @@ class EmailTest {
     assertThatCode(() -> new Email(address)).doesNotThrowAnyException();
   }
 
-  @Test
-  void invalidEmail() {
-    assertThatThrownBy(() -> new Email("123123123")).isInstanceOf(IllegalArgumentException.class);
-    assertThatThrownBy(() -> new Email("a@.com")).isInstanceOf(IllegalArgumentException.class);
-    assertThatThrownBy(() -> new Email("a@123")).isInstanceOf(IllegalArgumentException.class);
+  @ParameterizedTest
+  @ValueSource(strings = {"123123123", "a@.com", "a@123"})
+  void invalidEmail(String invalidEmail) {
+    assertThatThrownBy(() -> new Email(invalidEmail)).isInstanceOf(IllegalArgumentException.class);
   }
 }

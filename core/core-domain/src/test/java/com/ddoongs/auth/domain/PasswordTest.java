@@ -6,6 +6,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class PasswordTest {
 
@@ -25,29 +27,32 @@ class PasswordTest {
     assertThat(password.getPasswordHash()).isNotEqualTo(rawPassword);
   }
 
-  @Test
-  void validPassword() {
-    assertThatCode(() -> Password.of("a".repeat(8), passwordEncoder)).doesNotThrowAnyException();
-    assertThatCode(() -> Password.of("a".repeat(32), passwordEncoder)).doesNotThrowAnyException();
-    assertThatCode(() -> Password.of("1".repeat(8), passwordEncoder)).doesNotThrowAnyException();
-    assertThatCode(() -> Password.of("1".repeat(32), passwordEncoder)).doesNotThrowAnyException();
-    assertThatCode(() -> Password.of("*".repeat(8), passwordEncoder)).doesNotThrowAnyException();
-    assertThatCode(() -> Password.of("*".repeat(32), passwordEncoder)).doesNotThrowAnyException();
-    assertThatCode(() -> Password.of("1*a".repeat(32).substring(0, 32), passwordEncoder))
-        .doesNotThrowAnyException();
+  @ParameterizedTest
+  @ValueSource(
+      strings = {
+        "aaaaaaaa", // 8자리
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", // 32자리
+        "11111111", // 8자리
+        "11111111111111111111111111111111", // 32자리
+        "********", // 8자리
+        "********************************", // 32자리
+        "1*a1*a1*a1*a1*a1*a1*a1*a1*a1*a1*" // 32자리
+      })
+  void validPassword(String validPassword) {
+    assertThatCode(() -> Password.of(validPassword, passwordEncoder)).doesNotThrowAnyException();
   }
 
-  @Test
-  void invalidPassword() {
-    assertThatThrownBy(() -> Password.of("a".repeat(7), passwordEncoder))
-        .isInstanceOf(IllegalArgumentException.class);
-    assertThatThrownBy(() -> Password.of("a".repeat(33), passwordEncoder))
-        .isInstanceOf(IllegalArgumentException.class);
-    assertThatThrownBy(() -> Password.of("김".repeat(8), passwordEncoder))
-        .isInstanceOf(IllegalArgumentException.class);
-    assertThatThrownBy(() -> Password.of("김".repeat(32), passwordEncoder))
-        .isInstanceOf(IllegalArgumentException.class);
-    assertThatThrownBy(() -> Password.of("1*a김".repeat(32).substring(0, 32), passwordEncoder))
+  @ParameterizedTest
+  @ValueSource(
+      strings = {
+        "aaaaaaa", // 7자리
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", // 33자리
+        "김김김김김김김김", // 8자리
+        "김김김김김김김김김김김김김김김김김김김김김김김김김김김김김김김김", // 32자리
+        "1*a김1*a김1*a김1*a김1*a김1*a김1*a김1*a김" // 32자리
+      })
+  void invalidPassword(String invalidPassword) {
+    assertThatThrownBy(() -> Password.of(invalidPassword, passwordEncoder))
         .isInstanceOf(IllegalArgumentException.class);
   }
 }
