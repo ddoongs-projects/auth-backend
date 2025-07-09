@@ -1,33 +1,13 @@
 package com.ddoongs.auth.domain.verification;
 
-import com.ddoongs.auth.domain.shared.DefaultDateTime;
-import com.ddoongs.auth.domain.shared.Email;
-import java.util.UUID;
-import lombok.Getter;
+import java.util.regex.Pattern;
+import org.springframework.util.Assert;
 
-@Getter
-public class VerificationCode {
+public record VerificationCode(String code) {
 
-  private final UUID id;
-  private VerificationNumber code;
-  private Email email;
-  private VerificationPurpose purpose;
-  private VerificationCodeStatus status;
-  private DefaultDateTime defaultDateTime;
+  private static final Pattern PATTERN = Pattern.compile("^\\d{6}$");
 
-  private VerificationCode() {
-    this.id = UUID.randomUUID();
-  }
-
-  public static VerificationCode create(String code, Email email, VerificationPurpose purpose) {
-    VerificationCode verificationCode = new VerificationCode();
-
-    verificationCode.code = new VerificationNumber(code);
-    verificationCode.email = email;
-    verificationCode.purpose = purpose;
-
-    verificationCode.status = VerificationCodeStatus.PENDING;
-
-    return verificationCode;
+  public VerificationCode {
+    Assert.isTrue(PATTERN.matcher(code).matches(), "인증코드는 6자리 숫자여야 합니다.");
   }
 }

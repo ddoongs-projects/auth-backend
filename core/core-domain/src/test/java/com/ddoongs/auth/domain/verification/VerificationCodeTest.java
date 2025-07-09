@@ -7,17 +7,17 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-class VerificationCodeNumberTest {
+class VerificationCodeTest {
 
   @Test
   void constructor() {
-    assertThatCode(() -> new VerificationNumber("123456")).doesNotThrowAnyException();
+    assertThatCode(() -> new VerificationCode("123456")).doesNotThrowAnyException();
   }
 
   @ParameterizedTest
   @ValueSource(strings = {"12345", "1234567", "abcdef", "12345a"})
   void invalidValue(String invalidValue) {
-    assertThatThrownBy(() -> new VerificationNumber(invalidValue))
+    assertThatThrownBy(() -> new VerificationCode(invalidValue))
         .isInstanceOf(IllegalArgumentException.class);
   }
 }

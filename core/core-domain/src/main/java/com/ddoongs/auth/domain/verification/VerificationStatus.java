@@ -1,6 +1,6 @@
 package com.ddoongs.auth.domain.verification;
 
-public enum VerificationCodeStatus {
+public enum VerificationStatus {
   PENDING,
   VERIFIED
 }

@@ -8,19 +8,19 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-class VerificationCodeCodeTest {
+class VerificationTest {
 
   @Test
   void create() {
     String code = "123456";
     Email email = new Email("test@email.com");
     VerificationPurpose purpose = VerificationPurpose.REGISTER;
-    VerificationCode verificationCode = VerificationCode.create(code, email, purpose);
+    Verification verification = Verification.create(code, email, purpose);
 
-    assertThat(verificationCode.getId()).isNotNull();
-    assertThat(verificationCode.getCode().value()).isEqualTo(code);
-    assertThat(verificationCode.getEmail()).isEqualTo(email);
-    assertThat(verificationCode.getPurpose()).isEqualTo(purpose);
+    assertThat(verification.getId()).isNotNull();
+    assertThat(verification.getCode().code()).isEqualTo(code);
+    assertThat(verification.getEmail()).isEqualTo(email);
+    assertThat(verification.getPurpose()).isEqualTo(purpose);
   }
 
   @ParameterizedTest
@@ -29,7 +29,7 @@ class VerificationCodeCodeTest {
     Email email = new Email("test@email.com");
     VerificationPurpose purpose = VerificationPurpose.RESET_PASSWORD;
 
-    assertThatThrownBy(() -> VerificationCode.create(invalidCode, email, purpose))
+    assertThatThrownBy(() -> Verification.create(invalidCode, email, purpose))
         .isInstanceOf(IllegalArgumentException.class);
   }
 }
