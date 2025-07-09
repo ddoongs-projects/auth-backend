@@ -1,4 +1,4 @@
-package com.ddoongs.auth.domain;
+package com.ddoongs.auth.domain.verification;
 
 public enum VerificationPurpose {
   REGISTER("회원가입"),

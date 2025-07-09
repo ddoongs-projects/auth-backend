@@ -1,8 +1,9 @@
-package com.ddoongs.auth.domain;
+package com.ddoongs.auth.domain.member;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.ddoongs.auth.domain.TestFixture;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

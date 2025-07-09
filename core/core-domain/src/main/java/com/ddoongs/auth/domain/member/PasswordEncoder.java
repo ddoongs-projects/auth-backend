@@ -1,4 +1,4 @@
-package com.ddoongs.auth.domain;
+package com.ddoongs.auth.domain.member;
 
 public interface PasswordEncoder {
 

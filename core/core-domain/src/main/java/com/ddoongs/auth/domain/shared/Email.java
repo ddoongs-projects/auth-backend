@@ -1,4 +1,4 @@
-package com.ddoongs.auth.domain;
+package com.ddoongs.auth.domain.shared;
 
 import java.util.regex.Pattern;
 import org.springframework.util.Assert;

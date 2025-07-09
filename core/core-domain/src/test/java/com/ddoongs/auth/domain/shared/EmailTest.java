@@ -1,4 +1,4 @@
-package com.ddoongs.auth.domain;
+package com.ddoongs.auth.domain.shared;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;

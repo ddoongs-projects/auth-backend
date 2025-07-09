@@ -1,7 +1,9 @@
-package com.ddoongs.auth.domain;
+package com.ddoongs.auth.domain.member;
 
 import static java.util.Objects.requireNonNull;
 
+import com.ddoongs.auth.domain.shared.DefaultDateTime;
+import com.ddoongs.auth.domain.shared.Email;
 import lombok.Getter;
 
 @Getter

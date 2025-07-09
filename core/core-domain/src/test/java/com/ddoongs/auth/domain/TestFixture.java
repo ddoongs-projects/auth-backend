@@ -1,5 +1,6 @@
 package com.ddoongs.auth.domain;
 
+import com.ddoongs.auth.domain.member.PasswordEncoder;
 import java.util.Objects;
 
 public class TestFixture {

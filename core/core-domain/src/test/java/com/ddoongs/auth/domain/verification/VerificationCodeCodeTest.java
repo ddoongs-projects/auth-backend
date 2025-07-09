@@ -1,13 +1,14 @@
-package com.ddoongs.auth.domain;
+package com.ddoongs.auth.domain.verification;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.ddoongs.auth.domain.shared.Email;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-class VerificationCodeTest {
+class VerificationCodeCodeTest {
 
   @Test
   void create() {
