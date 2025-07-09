@@ -10,6 +10,7 @@ public class Member {
   private Long id;
   private Email email;
   private Password password;
+  private DefaultDateTime defaultDateTime;
 
   private Member() {}
 
