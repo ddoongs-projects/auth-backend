@@ -1,35 +1,30 @@
 package com.ddoongs.auth.domain.verification;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.ddoongs.auth.domain.shared.Email;
+import com.ddoongs.auth.domain.TestFixture;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 
 class VerificationTest {
 
-  @Test
-  void create() {
-    String code = "123456";
-    Email email = new Email("test@email.com");
-    VerificationPurpose purpose = VerificationPurpose.REGISTER;
-    Verification verification = Verification.create(code, email, purpose);
+  private VerificationCodeGenerator verificationCodeGenerator;
 
-    assertThat(verification.getId()).isNotNull();
-    assertThat(verification.getCode().code()).isEqualTo(code);
-    assertThat(verification.getEmail()).isEqualTo(email);
-    assertThat(verification.getPurpose()).isEqualTo(purpose);
+  @BeforeEach
+  void setup() {
+    verificationCodeGenerator = TestFixture.verificationCodeGenerator("123456");
   }
 
-  @ParameterizedTest
-  @ValueSource(strings = {"12345", "1234567", "abcdef", "12345a"})
-  void invalidCode(String invalidCode) {
-    Email email = new Email("test@email.com");
-    VerificationPurpose purpose = VerificationPurpose.RESET_PASSWORD;
+  @Test
+  void create() {
+    CreateVerification createVerification =
+        VerificationFixture.createVerification(VerificationPurpose.REGISTER);
+    Verification verification = Verification.create(createVerification, verificationCodeGenerator);
 
-    assertThatThrownBy(() -> Verification.create(invalidCode, email, purpose))
-        .isInstanceOf(IllegalArgumentException.class);
+    assertThat(verification.getId()).isNotNull();
+    assertThat(verification.getCode().code()).isEqualTo("123456");
+    assertThat(verification.getEmail()).isEqualTo(createVerification.email());
+    assertThat(verification.getPurpose()).isEqualTo(createVerification.purpose());
+    assertThat(verification.getDefaultDateTime()).isNotNull();
   }
 }

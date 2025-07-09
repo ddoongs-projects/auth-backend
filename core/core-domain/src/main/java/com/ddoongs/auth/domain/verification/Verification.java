@@ -19,14 +19,17 @@ public class Verification {
     this.id = UUID.randomUUID();
   }
 
-  public static Verification create(String code, Email email, VerificationPurpose purpose) {
+  public static Verification create(
+      CreateVerification createVerification, VerificationCodeGenerator verificationCodeGenerator) {
     Verification verification = new Verification();
 
-    verification.code = new VerificationCode(code);
-    verification.email = email;
-    verification.purpose = purpose;
+    verification.code = verificationCodeGenerator.generate();
+    verification.email = createVerification.email();
+    verification.purpose = createVerification.purpose();
 
     verification.status = VerificationStatus.PENDING;
+
+    verification.defaultDateTime = DefaultDateTime.now();
 
     return verification;
   }
