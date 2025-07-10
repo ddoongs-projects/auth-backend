@@ -4,8 +4,8 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
-import com.ddoongs.auth.domain.TestFixture;
 import com.ddoongs.auth.domain.shared.DefaultDateTime;
+import com.ddoongs.auth.domain.support.TestFixture;
 import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.util.Optional;

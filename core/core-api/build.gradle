@@ -12,6 +12,7 @@ dependencies {
 
     runtimeOnly project(':storage:db-core')
     runtimeOnly project(':infrastructure:verification-code')
+    runtimeOnly project(':infrastructure:mail')
 
     testImplementation project(":tests:api-docs")
 }

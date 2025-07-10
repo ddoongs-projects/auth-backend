@@ -22,3 +22,4 @@ include 'support:restdocs'
 include 'tests:api-docs'
 
 include 'infrastructure:verification-code'
+include 'infrastructure:mail'

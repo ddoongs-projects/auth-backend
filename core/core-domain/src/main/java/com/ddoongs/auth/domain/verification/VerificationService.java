@@ -11,11 +11,18 @@ public class VerificationService {
   private final VerificationRepository verificationRepository;
   private final RequestIntervalValidator requestIntervalValidator;
   private final VerificationCodeGenerator verificationCodeGenerator;
+  private final VerificationSender verificationSender;
 
   @Transactional
   public Verification issue(CreateVerification createVerification) {
     requestIntervalValidator.validateInterval(createVerification);
+
     Verification verification = Verification.create(createVerification, verificationCodeGenerator);
-    return verificationRepository.save(verification);
+
+    verification = verificationRepository.save(verification);
+
+    verificationSender.send(verification);
+
+    return verification;
   }
 }

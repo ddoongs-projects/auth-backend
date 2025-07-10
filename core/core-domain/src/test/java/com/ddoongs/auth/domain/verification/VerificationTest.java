@@ -2,7 +2,7 @@ package com.ddoongs.auth.domain.verification;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.ddoongs.auth.domain.TestFixture;
+import com.ddoongs.auth.domain.support.TestFixture;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

@@ -6,6 +6,7 @@ import static org.mockito.BDDMockito.given;
 
 import com.ddoongs.auth.TestApplication;
 import com.ddoongs.auth.domain.AuthTestConfiguration;
+import com.ddoongs.auth.domain.support.FakeVerificationSender;
 import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -29,7 +30,7 @@ class VerificationServiceTest {
   VerificationService verificationService;
 
   @Autowired
-  VerificationRepository verificationRepository;
+  FakeVerificationSender fakeVerificationSender;
 
   @MockitoBean
   DateTimeProvider dateTimeProvider;
@@ -39,6 +40,7 @@ class VerificationServiceTest {
 
   @BeforeEach
   void setup() {
+    fakeVerificationSender.clear();
     given(dateTimeProvider.getNow()).willReturn(Optional.of(LocalDateTime.now()));
     auditingHandler.setDateTimeProvider(dateTimeProvider);
   }
@@ -49,15 +51,15 @@ class VerificationServiceTest {
     CreateVerification createVerification = VerificationFixture.createVerification();
     Verification issue = verificationService.issue(createVerification);
 
-    Verification foundVerification = verificationRepository
-        .findLatest(createVerification.email(), createVerification.purpose())
-        .orElseThrow();
+    assertThat(issue.getEmail()).isEqualTo(createVerification.email());
+    assertThat(issue.getPurpose()).isEqualTo(createVerification.purpose());
+    assertThat(issue.getStatus()).isEqualTo(VerificationStatus.PENDING);
+    assertThat(issue.getCode().code()).isEqualTo("123456");
+    assertThat(issue.getDefaultDateTime().createdAt()).isNotNull();
 
-    assertThat(foundVerification.getEmail()).isEqualTo(createVerification.email());
-    assertThat(foundVerification.getPurpose()).isEqualTo(createVerification.purpose());
-    assertThat(foundVerification.getStatus()).isEqualTo(VerificationStatus.PENDING);
-    assertThat(foundVerification.getCode().code()).isEqualTo("123456");
-    assertThat(foundVerification.getDefaultDateTime().createdAt()).isNotNull();
+    assertThat(fakeVerificationSender.getSentMessages()).hasSize(1);
+    assertThat(fakeVerificationSender.getSentMessages().get(0))
+        .isEqualTo(createVerification.email());
   }
 
   @DisplayName("쿨다운이 완료되지 않으면 인증을 발급할 수 없다.")
@@ -68,6 +70,8 @@ class VerificationServiceTest {
 
     assertThatThrownBy(() -> verificationService.issue(createVerification))
         .isInstanceOf(VerificationCooldownException.class);
+
+    assertThat(fakeVerificationSender.getSentMessages()).hasSize(1);
   }
 
   @DisplayName("마지막 인증 발급이 쿨다운이 끝나고 난 이후에는 발급이 성공한다.")
@@ -85,5 +89,7 @@ class VerificationServiceTest {
     assertThat(verification.getStatus()).isEqualTo(VerificationStatus.PENDING);
     assertThat(verification.getCode().code()).isEqualTo("123456");
     assertThat(verification.getDefaultDateTime().createdAt()).isNotNull();
+
+    assertThat(fakeVerificationSender.getSentMessages().size()).isEqualTo(2);
   }
 }
