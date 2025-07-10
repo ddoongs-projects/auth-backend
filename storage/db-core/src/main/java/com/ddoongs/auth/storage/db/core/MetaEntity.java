@@ -7,8 +7,8 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.MappedSuperclass;
 import java.time.LocalDateTime;
 import lombok.Getter;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @EntityListeners(AuditingEntityListener.class)
@@ -20,12 +20,12 @@ public abstract class MetaEntity {
   private EntityStatus entityStatus = EntityStatus.ACTIVE;
 
   @Getter
-  @CreationTimestamp
+  @CreatedDate
   @Column(updatable = false)
   private LocalDateTime createdAt;
 
   @Getter
-  @UpdateTimestamp
+  @LastModifiedDate
   private LocalDateTime updatedAt;
 
   public void active() {

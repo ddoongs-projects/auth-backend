@@ -1,5 +1,6 @@
 dependencies {
-    implementation 'org.springframework:spring-context'
+    compileOnly 'org.springframework:spring-context'
+    compileOnly 'org.springframework:spring-tx'
 
     testImplementation project(':storage:db-core')
     testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa'
