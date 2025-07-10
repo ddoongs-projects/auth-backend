@@ -11,6 +11,7 @@ dependencies {
     implementation project(':support:monitoring')
 
     runtimeOnly project(':storage:db-core')
+    runtimeOnly project(':infrastructure:verification-code')
 
     testImplementation project(":tests:api-docs")
 }

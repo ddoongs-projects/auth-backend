@@ -1,0 +1,4 @@
+dependencies {
+    compileOnly 'org.springframework:spring-context'
+    compileOnly project(':core:core-domain')
+}
