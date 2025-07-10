@@ -1,0 +1,28 @@
+package com.ddoongs.auth.domain;
+
+import com.ddoongs.auth.domain.member.PasswordEncoder;
+import com.ddoongs.auth.domain.verification.RequestIntervalValidator;
+import com.ddoongs.auth.domain.verification.VerificationCodeGenerator;
+import com.ddoongs.auth.domain.verification.VerificationRepository;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+
+@TestConfiguration
+public class AuthTestConfiguration {
+
+  @Bean
+  public PasswordEncoder passwordEncoder() {
+    return TestFixture.passwordEncoder();
+  }
+
+  @Bean
+  public VerificationCodeGenerator verificationCodeGenerator() {
+    return TestFixture.verificationCodeGenerator("123456");
+  }
+
+  @Bean
+  public RequestIntervalValidator requestIntervalValidator(
+      final VerificationRepository verificationRepository) {
+    return new RequestIntervalValidator(verificationRepository);
+  }
+}

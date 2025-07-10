@@ -1,3 +1,6 @@
 dependencies {
     implementation 'org.springframework:spring-context'
+
+    testImplementation project(':storage:db-core')
+    testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 }

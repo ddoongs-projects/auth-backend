@@ -3,8 +3,10 @@ package com.ddoongs.auth.domain.verification;
 import com.ddoongs.auth.domain.shared.DefaultDateTime;
 import com.ddoongs.auth.domain.shared.Email;
 import java.util.UUID;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+@AllArgsConstructor
 @Getter
 public class Verification {
 
