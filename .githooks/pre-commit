@@ -49,7 +49,7 @@ done
 
 for FILE in "${STAGED_FILES[@]}"; do
     if [[ "$FILE" == *"/src/testFixtures/java/"* ]]; then
-        MODULE_PATH=$(echo "$FILE" | sed -E 's|/src/test/java/.*||')
+        MODULE_PATH=$(echo "$FILE" | sed -E 's|/src/testFixtures/java/.*||')
         if [ -n "$MODULE_PATH" ]; then
             MODULE=":${MODULE_PATH//\//:}"
         else
