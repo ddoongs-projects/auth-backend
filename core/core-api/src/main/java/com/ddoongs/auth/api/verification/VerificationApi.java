@@ -1,4 +1,4 @@
-package com.ddoongs.auth.api;
+package com.ddoongs.auth.api.verification;
 
 import com.ddoongs.auth.domain.verification.Verification;
 import com.ddoongs.auth.domain.verification.VerificationService;

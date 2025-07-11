@@ -1,4 +1,4 @@
-package com.ddoongs.auth.api;
+package com.ddoongs.auth.api.docs;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
@@ -7,6 +7,8 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWit
 import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 
+import com.ddoongs.auth.api.verification.CreateVerificationRequest;
+import com.ddoongs.auth.api.verification.VerificationApi;
 import com.ddoongs.auth.domain.support.TestFixture;
 import com.ddoongs.auth.domain.support.VerificationFixture;
 import com.ddoongs.auth.domain.verification.VerificationCodeGenerator;
