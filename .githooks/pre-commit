@@ -47,6 +47,22 @@ for FILE in "${STAGED_FILES[@]}"; do
     fi
 done
 
+for FILE in "${STAGED_FILES[@]}"; do
+    if [[ "$FILE" == *"/src/testFixtures/java/"* ]]; then
+        MODULE_PATH=$(echo "$FILE" | sed -E 's|/src/test/java/.*||')
+        if [ -n "$MODULE_PATH" ]; then
+            MODULE=":${MODULE_PATH//\//:}"
+        else
+            MODULE=":"
+        fi
+
+        # 중복 체크
+        if [[ ${#MODULES_LIST[@]} -eq 0 ]] || ! printf '%s\n' "${MODULES_LIST[@]}" | grep -q "^${MODULE}$"; then
+            MODULES_LIST+=("$MODULE")
+        fi
+    fi
+done
+
 if [ ${#MODULES_LIST[@]} -eq 0 ]; then
     echo "⚠️ Spotless 포매팅에 사용할 모듈을 찾을 수 없습니다!"
     exit 0
