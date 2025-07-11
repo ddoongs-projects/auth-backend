@@ -1,5 +1,6 @@
 package com.ddoongs.auth.api;
 
+import com.ddoongs.auth.domain.verification.Verification;
 import com.ddoongs.auth.domain.verification.VerificationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -14,8 +15,8 @@ public class VerificationApi {
   private final VerificationService verificationService;
 
   @PostMapping("/verifications")
-  public ApiResponse<Void> issue(@RequestBody @Valid CreateVerificationRequest request) {
-    verificationService.issue(request.toCommand());
-    return ApiResponse.success(null);
+  public VerificationIdResponse issue(@RequestBody @Valid CreateVerificationRequest request) {
+    Verification verification = verificationService.issue(request.toCommand());
+    return new VerificationIdResponse(verification.getId());
   }
 }
