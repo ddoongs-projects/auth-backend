@@ -6,6 +6,7 @@ import static org.mockito.Mockito.when;
 
 import com.ddoongs.auth.domain.shared.DefaultDateTime;
 import com.ddoongs.auth.domain.support.TestFixture;
+import com.ddoongs.auth.domain.support.VerificationFixture;
 import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.util.Optional;

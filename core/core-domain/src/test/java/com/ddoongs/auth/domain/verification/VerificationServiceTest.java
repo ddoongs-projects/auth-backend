@@ -7,6 +7,7 @@ import static org.mockito.BDDMockito.given;
 import com.ddoongs.auth.TestApplication;
 import com.ddoongs.auth.domain.AuthTestConfiguration;
 import com.ddoongs.auth.domain.support.FakeVerificationSender;
+import com.ddoongs.auth.domain.support.VerificationFixture;
 import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.Optional;

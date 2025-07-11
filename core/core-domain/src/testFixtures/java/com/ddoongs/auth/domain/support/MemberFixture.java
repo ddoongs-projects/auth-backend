@@ -1,4 +1,6 @@
-package com.ddoongs.auth.domain.member;
+package com.ddoongs.auth.domain.support;
+
+import com.ddoongs.auth.domain.member.RegisterMember;
 
 public class MemberFixture {
 

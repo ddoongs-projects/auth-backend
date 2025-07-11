@@ -1,7 +1,11 @@
-package com.ddoongs.auth.domain.verification;
+package com.ddoongs.auth.domain.support;
 
 import com.ddoongs.auth.domain.shared.DefaultDateTime;
 import com.ddoongs.auth.domain.shared.Email;
+import com.ddoongs.auth.domain.verification.CreateVerification;
+import com.ddoongs.auth.domain.verification.Verification;
+import com.ddoongs.auth.domain.verification.VerificationCodeGenerator;
+import com.ddoongs.auth.domain.verification.VerificationPurpose;
 import java.lang.reflect.Field;
 
 public class VerificationFixture {
