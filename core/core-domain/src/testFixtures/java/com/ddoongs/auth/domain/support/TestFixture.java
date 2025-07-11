@@ -15,4 +15,8 @@ public class TestFixture {
   public static VerificationCodeGenerator verificationCodeGenerator(String code) {
     return () -> new VerificationCode(code);
   }
+
+  public static VerificationCodeGenerator verificationCodeGenerator() {
+    return verificationCodeGenerator("123456");
+  }
 }
