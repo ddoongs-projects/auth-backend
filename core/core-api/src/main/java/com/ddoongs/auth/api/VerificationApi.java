@@ -14,7 +14,8 @@ public class VerificationApi {
   private final VerificationService verificationService;
 
   @PostMapping("/verifications")
-  public void issue(@RequestBody @Valid CreateVerificationRequest request) {
+  public ApiResponse<Void> issue(@RequestBody @Valid CreateVerificationRequest request) {
     verificationService.issue(request.toCommand());
+    return ApiResponse.success(null);
   }
 }

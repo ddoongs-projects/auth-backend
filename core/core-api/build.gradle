@@ -14,5 +14,6 @@ dependencies {
     runtimeOnly project(':infrastructure:verification-code')
     runtimeOnly project(':infrastructure:mail')
 
+    testImplementation testFixtures(project(':core:core-domain'))
     testImplementation project(":tests:api-docs")
 }

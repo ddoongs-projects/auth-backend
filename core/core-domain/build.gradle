@@ -1,10 +1,19 @@
+plugins {
+    id 'java-test-fixtures'
+}
+
 dependencies {
     compileOnly 'org.springframework:spring-context'
     compileOnly 'org.springframework:spring-tx'
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
-    testImplementation project(':storage:db-core')
+    testFixturesApi 'org.springframework.boot:spring-boot-starter-data-jpa'
+    testFixturesImplementation project(':storage:db-core')
+    testFixturesImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testFixturesCompileOnly 'org.projectlombok:lombok'
+    testFixturesAnnotationProcessor 'org.projectlombok:lombok'
+
     testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     testCompileOnly 'org.projectlombok:lombok'
     testAnnotationProcessor 'org.projectlombok:lombok'
