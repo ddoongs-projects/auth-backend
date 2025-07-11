@@ -5,6 +5,10 @@ package com.ddoongs.auth.domain.shared;
  */
 public class ConflictException extends BusinessException {
 
+  public ConflictException(CoreErrorCode code, Object... args) {
+    super(code, args);
+  }
+
   public ConflictException(Object... args) {
     super(CoreErrorCode.CONFLICT, args);
   }

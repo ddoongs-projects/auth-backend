@@ -5,6 +5,10 @@ package com.ddoongs.auth.domain.shared;
  */
 public class ValidationException extends BusinessException {
 
+  public ValidationException(CoreErrorCode code, Object... args) {
+    super(code, args);
+  }
+
   public ValidationException(Object... args) {
     super(CoreErrorCode.INVALID_REQUEST, args);
   }
