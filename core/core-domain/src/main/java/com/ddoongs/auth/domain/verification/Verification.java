@@ -35,4 +35,12 @@ public class Verification {
 
     return verification;
   }
+
+  public void verify() {
+    if (this.status == VerificationStatus.VERIFIED) {
+      throw new VerificationAlreadyCompletedException();
+    }
+
+    this.status = VerificationStatus.VERIFIED;
+  }
 }

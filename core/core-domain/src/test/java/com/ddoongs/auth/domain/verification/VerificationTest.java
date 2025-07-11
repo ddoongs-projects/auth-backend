@@ -1,9 +1,12 @@
 package com.ddoongs.auth.domain.verification;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.ddoongs.auth.domain.support.TestFixture;
 import com.ddoongs.auth.domain.support.VerificationFixture;
+import java.lang.reflect.Field;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -27,5 +30,24 @@ class VerificationTest {
     assertThat(verification.getEmail()).isEqualTo(createVerification.email());
     assertThat(verification.getPurpose()).isEqualTo(createVerification.purpose());
     assertThat(verification.getDefaultDateTime()).isNotNull();
+  }
+
+  @Test
+  void verify() {
+    Verification verification = VerificationFixture.verification(verificationCodeGenerator);
+
+    assertThatCode(verification::verify).doesNotThrowAnyException();
+  }
+
+  @Test
+  void verifyFail() throws NoSuchFieldException, IllegalAccessException {
+    Verification verification = VerificationFixture.verification(verificationCodeGenerator);
+
+    Field statusField = Verification.class.getDeclaredField("status");
+    statusField.setAccessible(true);
+    statusField.set(verification, VerificationStatus.VERIFIED);
+
+    assertThatThrownBy(verification::verify)
+        .isInstanceOf(VerificationAlreadyCompletedException.class);
   }
 }
