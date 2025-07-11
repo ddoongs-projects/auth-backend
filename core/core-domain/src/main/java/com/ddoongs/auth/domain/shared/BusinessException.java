@@ -1,8 +1,17 @@
 package com.ddoongs.auth.domain.shared;
 
-public class BusinessException extends RuntimeException {
+import lombok.Getter;
 
-  public BusinessException(String message) {
-    super(message);
+/**
+ * 모든 비즈니스 예외의 최상위 추상 클래스입니다.
+ */
+@Getter
+public abstract class BusinessException extends RuntimeException {
+
+  private final CoreErrorCode code;
+
+  public BusinessException(CoreErrorCode code, Object... args) {
+    super(String.format(code.getDefaultMessage(), args));
+    this.code = code;
   }
 }
