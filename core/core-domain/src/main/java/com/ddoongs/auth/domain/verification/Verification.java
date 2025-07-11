@@ -36,9 +36,13 @@ public class Verification {
     return verification;
   }
 
-  public void verify() {
+  public void verify(VerificationCode code) {
     if (this.status == VerificationStatus.VERIFIED) {
       throw new VerificationAlreadyCompletedException();
+    }
+
+    if (!this.code.equals(code)) {
+      throw new InvalidVerificationCodeException();
     }
 
     this.status = VerificationStatus.VERIFIED;

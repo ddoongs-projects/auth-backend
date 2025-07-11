@@ -36,18 +36,27 @@ class VerificationTest {
   void verify() {
     Verification verification = VerificationFixture.verification(verificationCodeGenerator);
 
-    assertThatCode(verification::verify).doesNotThrowAnyException();
+    assertThatCode(() -> verification.verify(new VerificationCode("123456")))
+        .doesNotThrowAnyException();
   }
 
   @Test
-  void verifyFail() throws NoSuchFieldException, IllegalAccessException {
+  void verifyFailInvalidCode() {
+    Verification verification = VerificationFixture.verification(verificationCodeGenerator);
+
+    assertThatThrownBy(() -> verification.verify(new VerificationCode("000000")))
+        .isInstanceOf(InvalidVerificationCodeException.class);
+  }
+
+  @Test
+  void verifyFailAlreadyVerified() throws NoSuchFieldException, IllegalAccessException {
     Verification verification = VerificationFixture.verification(verificationCodeGenerator);
 
     Field statusField = Verification.class.getDeclaredField("status");
     statusField.setAccessible(true);
     statusField.set(verification, VerificationStatus.VERIFIED);
 
-    assertThatThrownBy(verification::verify)
+    assertThatThrownBy(() -> verification.verify(new VerificationCode("123456")))
         .isInstanceOf(VerificationAlreadyCompletedException.class);
   }
 }

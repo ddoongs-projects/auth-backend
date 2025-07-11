@@ -11,6 +11,7 @@ public enum CoreErrorCode {
   CONFLICT(WARN, "이미 존재하는 리소스입니다."),
   VERIFICATION_COOLDOWN(WARN, "인증 발급 요청 간격이 너무 짧습니다. %d초 후에 시도해 주세요."),
   VERIFICATION_ALREADY_COMPLETED(WARN, "인증이 이미 완료되었습니다."),
+  INVALID_VERIFICATION_CODE(WARN, "인증코드가 일치하지 않습니다."),
   ;
 
   private final String defaultMessage;
