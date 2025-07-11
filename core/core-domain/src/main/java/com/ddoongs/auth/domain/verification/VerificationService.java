@@ -1,6 +1,7 @@
 package com.ddoongs.auth.domain.verification;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,7 +12,7 @@ public class VerificationService {
   private final VerificationRepository verificationRepository;
   private final RequestIntervalValidator requestIntervalValidator;
   private final VerificationCodeGenerator verificationCodeGenerator;
-  private final VerificationSender verificationSender;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Transactional
   public Verification issue(CreateVerification createVerification) {
@@ -21,7 +22,7 @@ public class VerificationService {
 
     verification = verificationRepository.save(verification);
 
-    verificationSender.send(verification);
+    eventPublisher.publishEvent(new VerificationCreatedEvent(verification));
 
     return verification;
   }

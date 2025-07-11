@@ -13,7 +13,7 @@
     <h1>이메일 인증 요청</h1>
   </div>
   <div class="content" style="padding: 20px;">
-    <p>서비스에 가입해주셔서 감사합니다. 아래 인증 코드를 사용하여 이메일 인증을 완료해주세요.</p>
+    <p>아래 인증 코드를 사용하여 <span th:text="${emailVerificationPurpose}"></span> 이메일 인증을 완료해주세요.</p>
     <p>이메일 인증 코드는 다음과 같습니다:</p>
     <h2 style="color: #4CAF50;">[<span th:text="${emailVerificationCode}"></span>]</h2>
     <p>감사합니다!<br>서비스 팀 드림</p>

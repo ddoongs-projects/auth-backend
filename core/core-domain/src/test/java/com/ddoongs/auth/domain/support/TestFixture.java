@@ -3,7 +3,6 @@ package com.ddoongs.auth.domain.support;
 import com.ddoongs.auth.domain.member.PasswordEncoder;
 import com.ddoongs.auth.domain.verification.VerificationCode;
 import com.ddoongs.auth.domain.verification.VerificationCodeGenerator;
-import com.ddoongs.auth.domain.verification.VerificationSender;
 
 public class TestFixture {
 
@@ -15,9 +14,5 @@ public class TestFixture {
 
   public static VerificationCodeGenerator verificationCodeGenerator(String code) {
     return () -> new VerificationCode(code);
-  }
-
-  public static VerificationSender verificationSender() {
-    return new FakeVerificationSender();
   }
 }

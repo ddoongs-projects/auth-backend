@@ -1,10 +1,9 @@
 package com.ddoongs.auth.infrastructure.mail;
 
 import com.ddoongs.auth.domain.verification.VerificationCode;
-import org.springframework.stereotype.Component;
+import com.ddoongs.auth.domain.verification.VerificationPurpose;
 
-@Component
 public interface EmailVerificationCodeHtmlLoader {
 
-  String loadWith(VerificationCode code);
+  String loadWith(VerificationCode code, VerificationPurpose purpose);
 }

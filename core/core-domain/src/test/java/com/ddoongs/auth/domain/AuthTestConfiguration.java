@@ -3,7 +3,6 @@ package com.ddoongs.auth.domain;
 import com.ddoongs.auth.domain.member.PasswordEncoder;
 import com.ddoongs.auth.domain.support.TestFixture;
 import com.ddoongs.auth.domain.verification.VerificationCodeGenerator;
-import com.ddoongs.auth.domain.verification.VerificationSender;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 
@@ -18,10 +17,5 @@ public class AuthTestConfiguration {
   @Bean
   public VerificationCodeGenerator verificationCodeGenerator() {
     return TestFixture.verificationCodeGenerator("123456");
-  }
-
-  @Bean
-  public VerificationSender verificationSender() {
-    return TestFixture.verificationSender();
   }
 }

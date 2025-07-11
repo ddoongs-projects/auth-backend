@@ -1,10 +1,11 @@
 package com.ddoongs.auth.domain.verification;
 
+import com.ddoongs.auth.domain.shared.BusinessException;
 import java.time.Duration;
 import lombok.Getter;
 
 @Getter
-public class VerificationCooldownException extends RuntimeException {
+public class VerificationCooldownException extends BusinessException {
 
   private final Duration remainCooldown;
 
