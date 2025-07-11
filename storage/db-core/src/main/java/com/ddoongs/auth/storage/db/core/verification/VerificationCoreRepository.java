@@ -23,7 +23,7 @@ public class VerificationCoreRepository implements VerificationRepository {
   }
 
   @Override
-  public Optional<Verification> findById(final UUID verificationId) {
+  public Optional<Verification> find(final UUID verificationId) {
     return verificationJpoRepository.findById(verificationId).map(VerificationJpo::toDomain);
   }
 

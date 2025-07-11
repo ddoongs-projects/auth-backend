@@ -71,7 +71,7 @@ class VerificationApiTest {
         result.getResponse().getContentAsString(), VerificationIdResponse.class);
 
     Verification verification =
-        verificationRepository.findById(response.verificationId()).orElseThrow();
+        verificationRepository.find(response.verificationId()).orElseThrow();
 
     assertThat(verification.getStatus()).isEqualTo(VerificationStatus.PENDING);
     assertThat(verification.getEmail().address()).isEqualTo("test@email.com");

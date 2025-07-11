@@ -1,16 +1,19 @@
 package com.ddoongs.auth.domain.verification;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
 
 import com.ddoongs.auth.TestApplication;
 import com.ddoongs.auth.domain.AuthTestConfiguration;
+import com.ddoongs.auth.domain.shared.NotFoundException;
 import com.ddoongs.auth.domain.support.FakeVerificationSender;
 import com.ddoongs.auth.domain.support.VerificationFixture;
 import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -32,6 +35,9 @@ class VerificationServiceTest {
 
   @Autowired
   FakeVerificationSender fakeVerificationSender;
+
+  @Autowired
+  VerificationRepository verificationRepository;
 
   @MockitoBean
   DateTimeProvider dateTimeProvider;
@@ -92,5 +98,37 @@ class VerificationServiceTest {
     assertThat(verification.getDefaultDateTime().createdAt()).isNotNull();
 
     assertThat(fakeVerificationSender.getSentMessages().size()).isEqualTo(2);
+  }
+
+  @DisplayName("인증되지 않은 인증에 대한 인증완료 요청은 성공한다.")
+  @Test
+  void verify() {
+    CreateVerification createVerification = VerificationFixture.createVerification();
+    Verification verification = verificationService.issue(createVerification);
+
+    assertThatCode(() -> verificationService.verify(verification.getId()))
+        .doesNotThrowAnyException();
+
+    Verification found = verificationRepository.find(verification.getId()).orElseThrow();
+
+    assertThat(found.getStatus()).isEqualTo(VerificationStatus.VERIFIED);
+  }
+
+  @DisplayName("존재하지 않은 인증에 대한 인증완료 요청은 실패한다.")
+  @Test
+  void verify_fail_not_found() {
+    assertThatThrownBy(() -> verificationService.verify(UUID.randomUUID()))
+        .isInstanceOf(NotFoundException.class);
+  }
+
+  @DisplayName("이미 인증 완료된 인증에 대한 인증완료 요청은 실패한다.")
+  @Test
+  void verify_fail_already_verified() {
+    CreateVerification createVerification = VerificationFixture.createVerification();
+    Verification verification = verificationService.issue(createVerification);
+    verificationService.verify(verification.getId());
+
+    assertThatThrownBy(() -> verificationService.verify(verification.getId()))
+        .isInstanceOf(VerificationAlreadyCompletedException.class);
   }
 }

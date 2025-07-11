@@ -8,7 +8,7 @@ public interface VerificationRepository {
 
   Verification save(Verification verification);
 
-  Optional<Verification> findById(UUID verificationId);
+  Optional<Verification> find(UUID verificationId);
 
   Optional<Verification> findLatest(Email email, VerificationPurpose purpose);
 }
