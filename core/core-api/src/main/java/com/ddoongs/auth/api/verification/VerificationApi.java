@@ -19,4 +19,9 @@ public class VerificationApi {
     Verification verification = verificationService.issue(request.toCommand());
     return new VerificationIdResponse(verification.getId());
   }
+
+  @PostMapping("/verifications/verify")
+  public void issue(@RequestBody @Valid VerifyVerificationRequest request) {
+    verificationService.verify(request.verificationId(), request.toCode());
+  }
 }

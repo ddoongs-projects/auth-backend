@@ -9,12 +9,14 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.response
 
 import com.ddoongs.auth.api.verification.CreateVerificationRequest;
 import com.ddoongs.auth.api.verification.VerificationApi;
+import com.ddoongs.auth.api.verification.VerifyVerificationRequest;
 import com.ddoongs.auth.domain.support.TestFixture;
 import com.ddoongs.auth.domain.support.VerificationFixture;
 import com.ddoongs.auth.domain.verification.VerificationCodeGenerator;
 import com.ddoongs.auth.domain.verification.VerificationPurpose;
 import com.ddoongs.auth.domain.verification.VerificationService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -69,5 +71,26 @@ class VerificationApiDocsTest {
                 fieldWithPath("purpose")
                     .description("인증 목적 (REGISTER: 회원가입, RESET_PASSWORD: 비밀번호 초기화)")),
             responseFields(fieldWithPath("verificationId").description("인증 식별자"))));
+  }
+
+  @DisplayName("인증번호 인증 API 문서 생성")
+  @Test
+  void verify() throws Exception {
+
+    UUID verificationId = UUID.randomUUID();
+    String code = "123456";
+    final var request = new VerifyVerificationRequest(verificationId, code);
+
+    assertThat(mvc.post()
+            .uri("/verifications/verify")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request))
+            .exchange())
+        .hasStatusOk()
+        .apply(document(
+            "verification-verify",
+            requestFields(
+                fieldWithPath("verificationId").description("인증코드 식별자"),
+                fieldWithPath("code").description("인증 코드"))));
   }
 }

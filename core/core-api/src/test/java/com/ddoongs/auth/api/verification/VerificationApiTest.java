@@ -7,14 +7,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.ddoongs.auth.domain.AuthTestConfiguration;
 import com.ddoongs.auth.domain.shared.CoreErrorCode;
 import com.ddoongs.auth.domain.support.FakeVerificationSender;
+import com.ddoongs.auth.domain.support.TestFixture;
 import com.ddoongs.auth.domain.support.VerificationFixture;
 import com.ddoongs.auth.domain.verification.CreateVerification;
 import com.ddoongs.auth.domain.verification.Verification;
+import com.ddoongs.auth.domain.verification.VerificationCode;
 import com.ddoongs.auth.domain.verification.VerificationPurpose;
 import com.ddoongs.auth.domain.verification.VerificationRepository;
 import com.ddoongs.auth.domain.verification.VerificationService;
 import com.ddoongs.auth.domain.verification.VerificationStatus;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -101,5 +105,98 @@ class VerificationApiTest {
         .hasPathSatisfying("$.code", equalsTo(CoreErrorCode.VERIFICATION_COOLDOWN.toString()));
 
     assertThat(fakeVerificationSender.getSentMessages()).hasSize(1);
+  }
+
+  @DisplayName("인증번호 인증에 성공한다.")
+  @Test
+  void verify() throws JsonProcessingException {
+    CreateVerification createVerification = VerificationFixture.createVerification();
+    Verification verification = verificationService.issue(createVerification);
+
+    VerifyVerificationRequest request =
+        new VerifyVerificationRequest(verification.getId(), TestFixture.FIXED_CODE);
+
+    final var result = mvc.post()
+        .uri("/verifications/verify")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(request))
+        .exchange();
+
+    assertThat(result).hasStatusOk();
+
+    Verification foundVerification =
+        verificationRepository.find(verification.getId()).orElseThrow();
+
+    assertThat(foundVerification.getStatus()).isEqualTo(VerificationStatus.VERIFIED);
+    assertThat(foundVerification.getEmail().address())
+        .isEqualTo(createVerification.email().address());
+    assertThat(foundVerification.getPurpose()).isEqualTo(createVerification.purpose());
+  }
+
+  @DisplayName("인증번호가 다르면 인증에 실패한다.")
+  @Test
+  void verifyFailInvalidCode() throws JsonProcessingException {
+    CreateVerification createVerification = VerificationFixture.createVerification();
+    Verification verification = verificationService.issue(createVerification);
+
+    VerifyVerificationRequest request =
+        new VerifyVerificationRequest(verification.getId(), "000000");
+
+    final var result = mvc.post()
+        .uri("/verifications/verify")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(request))
+        .exchange();
+
+    assertThat(result)
+        .hasStatus(HttpStatus.BAD_REQUEST)
+        .bodyJson()
+        .hasPathSatisfying("$.code", equalsTo(CoreErrorCode.INVALID_VERIFICATION_CODE.toString()));
+
+    Verification foundVerification =
+        verificationRepository.find(verification.getId()).orElseThrow();
+
+    assertThat(foundVerification.getStatus()).isEqualTo(VerificationStatus.PENDING);
+  }
+
+  @DisplayName("인증번호 식별자가 존재하지 않으면 인증에 실패한다.")
+  @Test
+  void verifyFailVerificationNotFound() throws JsonProcessingException {
+    VerifyVerificationRequest request =
+        new VerifyVerificationRequest(UUID.randomUUID(), TestFixture.FIXED_CODE);
+
+    final var result = mvc.post()
+        .uri("/verifications/verify")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(request))
+        .exchange();
+
+    assertThat(result)
+        .hasStatus(HttpStatus.NOT_FOUND)
+        .bodyJson()
+        .hasPathSatisfying("$.code", equalsTo(CoreErrorCode.NOT_FOUND.toString()));
+  }
+
+  @DisplayName("이미 인증 완료되었으면 인증에 실패한다.")
+  @Test
+  void verifyFailAlreadyVerified() throws JsonProcessingException {
+    CreateVerification createVerification = VerificationFixture.createVerification();
+    Verification verification = verificationService.issue(createVerification);
+    verificationService.verify(verification.getId(), new VerificationCode(TestFixture.FIXED_CODE));
+
+    VerifyVerificationRequest request =
+        new VerifyVerificationRequest(verification.getId(), TestFixture.FIXED_CODE);
+
+    final var result = mvc.post()
+        .uri("/verifications/verify")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(request))
+        .exchange();
+
+    assertThat(result)
+        .hasStatus(HttpStatus.BAD_REQUEST)
+        .bodyJson()
+        .hasPathSatisfying(
+            "$.code", equalsTo(CoreErrorCode.VERIFICATION_ALREADY_COMPLETED.toString()));
   }
 }

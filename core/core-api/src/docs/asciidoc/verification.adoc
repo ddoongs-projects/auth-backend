@@ -6,3 +6,10 @@
 인증번호를 발급합니다.
 
 operation::verification-issue[]
+
+[[verification-verify]]
+=== 인증번호 인증
+
+인증번호를 인증합니다.
+
+operation::verification-verify[]

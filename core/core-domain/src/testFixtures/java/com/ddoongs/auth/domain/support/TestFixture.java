@@ -6,6 +6,8 @@ import com.ddoongs.auth.domain.verification.VerificationCodeGenerator;
 
 public class TestFixture {
 
+  public static final String FIXED_CODE = "123456";
+
   private TestFixture() {}
 
   public static PasswordEncoder passwordEncoder() {
@@ -17,6 +19,6 @@ public class TestFixture {
   }
 
   public static VerificationCodeGenerator verificationCodeGenerator() {
-    return verificationCodeGenerator("123456");
+    return verificationCodeGenerator(FIXED_CODE);
   }
 }
