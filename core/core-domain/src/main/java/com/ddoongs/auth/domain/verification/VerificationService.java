@@ -1,6 +1,5 @@
 package com.ddoongs.auth.domain.verification;
 
-import com.ddoongs.auth.domain.shared.NotFoundException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -15,6 +14,7 @@ public class VerificationService {
   private final RequestIntervalValidator requestIntervalValidator;
   private final VerificationCodeGenerator verificationCodeGenerator;
   private final ApplicationEventPublisher eventPublisher;
+  private final VerificationFinder verificationFinder;
 
   @Transactional
   public Verification issue(CreateVerification createVerification) {
@@ -31,8 +31,7 @@ public class VerificationService {
 
   @Transactional
   public Verification verify(UUID verificationId, VerificationCode code) {
-    Verification verification =
-        verificationRepository.find(verificationId).orElseThrow(NotFoundException::new);
+    Verification verification = verificationFinder.find(verificationId);
 
     verification.verify(code);
 

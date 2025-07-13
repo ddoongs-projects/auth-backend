@@ -174,7 +174,7 @@ class VerificationApiTest {
     assertThat(result)
         .hasStatus(HttpStatus.NOT_FOUND)
         .bodyJson()
-        .hasPathSatisfying("$.code", equalsTo(CoreErrorCode.NOT_FOUND.toString()));
+        .hasPathSatisfying("$.code", equalsTo(CoreErrorCode.VERIFICATION_NOT_FOUND.toString()));
   }
 
   @DisplayName("이미 인증 완료되었으면 인증에 실패한다.")

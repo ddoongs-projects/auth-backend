@@ -7,7 +7,6 @@ import static org.mockito.BDDMockito.given;
 
 import com.ddoongs.auth.TestApplication;
 import com.ddoongs.auth.domain.AuthTestConfiguration;
-import com.ddoongs.auth.domain.shared.NotFoundException;
 import com.ddoongs.auth.domain.support.FakeVerificationSender;
 import com.ddoongs.auth.domain.support.VerificationFixture;
 import jakarta.transaction.Transactional;
@@ -120,7 +119,7 @@ class VerificationServiceTest {
   void verify_fail_not_found() {
     assertThatThrownBy(
             () -> verificationService.verify(UUID.randomUUID(), new VerificationCode("123456")))
-        .isInstanceOf(NotFoundException.class);
+        .isExactlyInstanceOf(VerificationNotFoundException.class);
   }
 
   @DisplayName("이미 인증 완료된 인증에 대한 인증완료 요청은 실패한다.")
