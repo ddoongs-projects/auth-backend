@@ -30,11 +30,11 @@ public class VerificationService {
   }
 
   @Transactional
-  public Verification verify(UUID verificationId) {
+  public Verification verify(UUID verificationId, VerificationCode code) {
     Verification verification =
         verificationRepository.find(verificationId).orElseThrow(NotFoundException::new);
 
-    verification.verify();
+    verification.verify(code);
 
     return verificationRepository.save(verification);
   }

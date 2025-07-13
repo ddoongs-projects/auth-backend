@@ -106,7 +106,8 @@ class VerificationServiceTest {
     CreateVerification createVerification = VerificationFixture.createVerification();
     Verification verification = verificationService.issue(createVerification);
 
-    assertThatCode(() -> verificationService.verify(verification.getId()))
+    assertThatCode(
+            () -> verificationService.verify(verification.getId(), new VerificationCode("123456")))
         .doesNotThrowAnyException();
 
     Verification found = verificationRepository.find(verification.getId()).orElseThrow();
@@ -117,7 +118,8 @@ class VerificationServiceTest {
   @DisplayName("존재하지 않은 인증에 대한 인증완료 요청은 실패한다.")
   @Test
   void verify_fail_not_found() {
-    assertThatThrownBy(() -> verificationService.verify(UUID.randomUUID()))
+    assertThatThrownBy(
+            () -> verificationService.verify(UUID.randomUUID(), new VerificationCode("123456")))
         .isInstanceOf(NotFoundException.class);
   }
 
@@ -126,9 +128,21 @@ class VerificationServiceTest {
   void verify_fail_already_verified() {
     CreateVerification createVerification = VerificationFixture.createVerification();
     Verification verification = verificationService.issue(createVerification);
-    verificationService.verify(verification.getId());
+    verificationService.verify(verification.getId(), new VerificationCode("123456"));
 
-    assertThatThrownBy(() -> verificationService.verify(verification.getId()))
+    assertThatThrownBy(
+            () -> verificationService.verify(verification.getId(), new VerificationCode("123456")))
         .isInstanceOf(VerificationAlreadyCompletedException.class);
+  }
+
+  @DisplayName("인증 코드 불일치 시 인증완료 요청은 실패한다.")
+  @Test
+  void verify_fail_invalid_code() {
+    CreateVerification createVerification = VerificationFixture.createVerification();
+    Verification verification = verificationService.issue(createVerification);
+
+    assertThatThrownBy(
+            () -> verificationService.verify(verification.getId(), new VerificationCode("000000")))
+        .isInstanceOf(InvalidVerificationCodeException.class);
   }
 }
