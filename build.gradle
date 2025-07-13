@@ -30,6 +30,7 @@ subprojects {
     }
     configurations {
         asciidoctorExt
+        mockitoAgent
     }
 
     dependencyManagement {
@@ -43,6 +44,9 @@ subprojects {
         annotationProcessor("org.projectlombok:lombok")
         testAnnotationProcessor("org.projectlombok:lombok")
         testImplementation 'org.springframework.boot:spring-boot-starter-test'
+        mockitoAgent('org.mockito:mockito-core') {
+            transitive = false
+        }
         testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     }
 
@@ -54,6 +58,7 @@ subprojects {
             excludeTags('develop', 'restdocs')
         }
         jvmArgs '-Xshare:off'
+        jvmArgs "-javaagent:${configurations.mockitoAgent.singleFile}"
     }
 
     tasks.register('unitTest', Test) {
