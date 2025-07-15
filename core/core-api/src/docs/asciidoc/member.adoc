@@ -1,0 +1,7 @@
+[[member]]
+== Member API
+
+[[member-register]]
+=== 회원가입
+
+operation::member-register[]

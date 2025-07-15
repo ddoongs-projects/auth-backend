@@ -26,4 +26,9 @@ public class MemberFixture {
         Password.of("123asd!@#", passwordEncoder),
         DefaultDateTime.now());
   }
+
+  public static Member member(String email, PasswordEncoder passwordEncoder) {
+    return new Member(
+        1L, new Email(email), Password.of("123asd!@#", passwordEncoder), DefaultDateTime.now());
+  }
 }
