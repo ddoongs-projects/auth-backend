@@ -47,4 +47,20 @@ public class Verification {
 
     this.status = VerificationStatus.VERIFIED;
   }
+
+  /**
+   * 주어진 이메일·인증목적에 대한 유효성을 검증한다.
+   *
+   * @throws VerificationMismatchException     해당되지 않은 인증일 경우
+   * @throws VerificationNotCompletedException 인증이 완료되지 않았을 경우
+   */
+  public void ensureValidFor(Email expectedEmail, VerificationPurpose expectedPurpose) {
+    if (!this.email.equals(expectedEmail) || this.purpose != expectedPurpose) {
+      throw new VerificationMismatchException();
+    }
+
+    if (this.status != VerificationStatus.VERIFIED) {
+      throw new VerificationNotCompletedException();
+    }
+  }
 }

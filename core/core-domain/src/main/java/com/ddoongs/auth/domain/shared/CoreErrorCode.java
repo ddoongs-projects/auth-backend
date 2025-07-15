@@ -12,7 +12,9 @@ public enum CoreErrorCode {
   VERIFICATION_COOLDOWN(WARN, "인증 발급 요청 간격이 너무 짧습니다. %d초 후에 시도해 주세요."),
   VERIFICATION_ALREADY_COMPLETED(WARN, "인증이 이미 완료되었습니다."),
   INVALID_VERIFICATION_CODE(WARN, "인증코드가 일치하지 않습니다."),
-  VERIFICATION_NOT_FOUND(WARN, "존재하지 않는 인증입니다.");
+  VERIFICATION_NOT_FOUND(WARN, "존재하지 않는 인증입니다."),
+  VERIFICATION_MISMATCH(WARN, "요청 대상과 일치하는 인증 정보가 아닙니다."),
+  VERIFICATION_NOT_COMPLETED(WARN, "인증이 완료되지 않았습니다.");
 
   private final String defaultMessage;
   private final CoreErrorLevel level;

@@ -15,6 +15,10 @@ public class MemberFixture {
     return new RegisterMember("duk9741@gmail.com", "123asd!@#");
   }
 
+  public static RegisterMember registerMember(String email) {
+    return new RegisterMember(email, "123asd!@#");
+  }
+
   public static Member member(PasswordEncoder passwordEncoder) {
     return new Member(
         1L,
