@@ -16,6 +16,6 @@ public class AuthTestConfiguration {
 
   @Bean
   public VerificationCodeGenerator verificationCodeGenerator() {
-    return TestFixture.verificationCodeGenerator("123456");
+    return TestFixture.verificationCodeGenerator();
   }
 }
