@@ -37,6 +37,9 @@ class MemberServiceTest {
   @Autowired
   private MemberService memberService;
 
+  @Autowired
+  private MemberRepository memberRepository;
+
   @BeforeEach
   void setup() {
     verificationCodeGenerator.setFixedCode("123456");
@@ -56,9 +59,24 @@ class MemberServiceTest {
     assertThat(member.getDefaultDateTime()).isNotNull();
   }
 
+  @DisplayName("중복된 이메일로 등록 시 회원 등록에 실패한다.")
+  @Test
+  void registerFailDuplicatedEmail() {
+    String email = "test@test.com";
+
+    memberRepository.save(new Member(null, new Email(email), new Password("123123123"), null));
+
+    Verification verification2 = prepareRegister(email);
+
+    assertThatThrownBy(() ->
+            memberService.register(MemberFixture.registerMember(email), verification2.getId()))
+        .isInstanceOf(DuplicatedEmailException.class);
+  }
+
   @DisplayName("인증이 완료되지 않은 경우 회원 등록에 실패한다.")
   @Test
   void registerFailNotVerified() {
+
     String email = "test@test.com";
     CreateVerification createVerification =
         new CreateVerification(new Email(email), VerificationPurpose.REGISTER);

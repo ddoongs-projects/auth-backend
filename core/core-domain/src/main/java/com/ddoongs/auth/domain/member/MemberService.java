@@ -16,9 +16,12 @@ public class MemberService {
   private final PasswordEncoder passwordEncoder;
   private final VerificationFinder verificationFinder;
   private final MemberRepository memberRepository;
+  private final MemberValidator memberValidator;
 
   @Transactional
   public Member register(RegisterMember registerMember, UUID verificationId) {
+    memberValidator.validateEmailUnique(new Email(registerMember.email()));
+
     Verification verification = verificationFinder.find(verificationId);
 
     verification.ensureValidFor(new Email(registerMember.email()), VerificationPurpose.REGISTER);
