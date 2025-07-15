@@ -16,7 +16,7 @@ public class Password {
 
   private final String passwordHash;
 
-  private Password(String passwordHash) {
+  public Password(String passwordHash) {
     this.passwordHash = passwordHash;
   }
 
