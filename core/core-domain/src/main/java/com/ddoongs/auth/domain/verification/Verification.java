@@ -5,6 +5,7 @@ import com.ddoongs.auth.domain.shared.Email;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.springframework.util.Assert;
 
 @AllArgsConstructor
 @Getter
@@ -37,6 +38,8 @@ public class Verification {
   }
 
   public void verify(VerificationCode code) {
+    Assert.state(this.status != VerificationStatus.CONSUMED, "이미 소비된 인증에 호출할 수 없는 메서드입니다.");
+
     if (this.status == VerificationStatus.VERIFIED) {
       throw new VerificationAlreadyCompletedException();
     }
@@ -59,8 +62,17 @@ public class Verification {
       throw new VerificationMismatchException();
     }
 
-    if (this.status != VerificationStatus.VERIFIED) {
+    if (this.status == VerificationStatus.CONSUMED) {
+      throw new AlreadyConsumedVerificationException();
+    }
+
+    if (this.status == VerificationStatus.PENDING) {
       throw new VerificationNotCompletedException();
     }
+  }
+
+  public void consume() {
+    Assert.state(this.status == VerificationStatus.VERIFIED, "인증 완료되었을 때만 호출 할 수 있습니다.");
+    this.status = VerificationStatus.CONSUMED;
   }
 }

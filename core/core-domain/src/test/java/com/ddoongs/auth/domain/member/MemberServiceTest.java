@@ -11,10 +11,12 @@ import com.ddoongs.auth.domain.support.MemberFixture;
 import com.ddoongs.auth.domain.verification.CreateVerification;
 import com.ddoongs.auth.domain.verification.Verification;
 import com.ddoongs.auth.domain.verification.VerificationCode;
+import com.ddoongs.auth.domain.verification.VerificationFinder;
 import com.ddoongs.auth.domain.verification.VerificationMismatchException;
 import com.ddoongs.auth.domain.verification.VerificationNotCompletedException;
 import com.ddoongs.auth.domain.verification.VerificationPurpose;
 import com.ddoongs.auth.domain.verification.VerificationService;
+import com.ddoongs.auth.domain.verification.VerificationStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -40,6 +42,9 @@ class MemberServiceTest {
   @Autowired
   private MemberRepository memberRepository;
 
+  @Autowired
+  private VerificationFinder verificationFinder;
+
   @BeforeEach
   void setup() {
     verificationCodeGenerator.setFixedCode("123456");
@@ -57,6 +62,10 @@ class MemberServiceTest {
     assertThat(member.getId()).isNotNull();
     assertThat(member.getEmail().address()).isEqualTo(email);
     assertThat(member.getDefaultDateTime()).isNotNull();
+
+    Verification verification1 = verificationFinder.find(verification.getId());
+
+    assertThat(verification1.getStatus()).isEqualTo(VerificationStatus.CONSUMED);
   }
 
   @DisplayName("중복된 이메일로 등록 시 회원 등록에 실패한다.")
@@ -71,6 +80,10 @@ class MemberServiceTest {
     assertThatThrownBy(() ->
             memberService.register(MemberFixture.registerMember(email), verification2.getId()))
         .isInstanceOf(DuplicatedEmailException.class);
+
+    Verification foundVerification = verificationFinder.find(verification2.getId());
+
+    assertThat(foundVerification.getStatus()).isNotEqualTo(VerificationStatus.CONSUMED);
   }
 
   @DisplayName("인증이 완료되지 않은 경우 회원 등록에 실패한다.")
@@ -85,6 +98,10 @@ class MemberServiceTest {
     assertThatThrownBy(
             () -> memberService.register(MemberFixture.registerMember(email), verification.getId()))
         .isInstanceOf(VerificationNotCompletedException.class);
+
+    Verification foundVerification = verificationFinder.find(verification.getId());
+
+    assertThat(foundVerification.getStatus()).isNotEqualTo(VerificationStatus.CONSUMED);
   }
 
   @DisplayName("인증 목적이 일치하지 않는 경우 회원 등록에 실패한다.")
@@ -98,6 +115,10 @@ class MemberServiceTest {
     assertThatThrownBy(
             () -> memberService.register(MemberFixture.registerMember(email), verification.getId()))
         .isInstanceOf(VerificationMismatchException.class);
+
+    Verification foundVerification = verificationFinder.find(verification.getId());
+
+    assertThat(foundVerification.getStatus()).isNotEqualTo(VerificationStatus.CONSUMED);
   }
 
   @DisplayName("인증 이메일과 일치하지 않는 경우 회원 등록에 실패한다.")
@@ -111,6 +132,10 @@ class MemberServiceTest {
     assertThatThrownBy(
             () -> memberService.register(MemberFixture.registerMember(email), verification.getId()))
         .isInstanceOf(VerificationMismatchException.class);
+
+    Verification foundVerification = verificationFinder.find(verification.getId());
+
+    assertThat(foundVerification.getStatus()).isNotEqualTo(VerificationStatus.CONSUMED);
   }
 
   private Verification prepareRegister(String email) {

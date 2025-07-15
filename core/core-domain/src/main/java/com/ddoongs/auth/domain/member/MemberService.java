@@ -4,6 +4,7 @@ import com.ddoongs.auth.domain.shared.Email;
 import com.ddoongs.auth.domain.verification.Verification;
 import com.ddoongs.auth.domain.verification.VerificationFinder;
 import com.ddoongs.auth.domain.verification.VerificationPurpose;
+import com.ddoongs.auth.domain.verification.VerificationRepository;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ public class MemberService {
   private final VerificationFinder verificationFinder;
   private final MemberRepository memberRepository;
   private final MemberValidator memberValidator;
+  private final VerificationRepository verificationRepository;
 
   @Transactional
   public Member register(RegisterMember registerMember, UUID verificationId) {
@@ -27,6 +29,11 @@ public class MemberService {
     verification.ensureValidFor(new Email(registerMember.email()), VerificationPurpose.REGISTER);
 
     Member member = Member.register(registerMember, passwordEncoder);
+
+    verification.consume();
+
+    verificationRepository.save(verification);
+
     return memberRepository.save(member);
   }
 }

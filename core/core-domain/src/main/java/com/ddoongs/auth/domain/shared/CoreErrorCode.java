@@ -15,7 +15,8 @@ public enum CoreErrorCode {
   VERIFICATION_NOT_FOUND(WARN, "존재하지 않는 인증입니다."),
   VERIFICATION_MISMATCH(WARN, "요청 대상과 일치하는 인증 정보가 아닙니다."),
   VERIFICATION_NOT_COMPLETED(WARN, "인증이 완료되지 않았습니다."),
-  DUPLICATED_EMAIL(WARN, "중복된 이메일입니다.: %s");
+  DUPLICATED_EMAIL(WARN, "중복된 이메일입니다.: %s"),
+  ALREADY_CONSUMED_VERIFICATION(WARN, "이미 인증 완료된 인증입니다.");
 
   private final String defaultMessage;
   private final CoreErrorLevel level;
