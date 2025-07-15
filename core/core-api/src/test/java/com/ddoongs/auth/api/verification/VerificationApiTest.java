@@ -6,8 +6,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.ddoongs.auth.domain.AuthTestConfiguration;
 import com.ddoongs.auth.domain.shared.CoreErrorCode;
+import com.ddoongs.auth.domain.support.FakeVerificationCodeGenerator;
 import com.ddoongs.auth.domain.support.FakeVerificationSender;
-import com.ddoongs.auth.domain.support.TestFixture;
 import com.ddoongs.auth.domain.support.VerificationFixture;
 import com.ddoongs.auth.domain.verification.CreateVerification;
 import com.ddoongs.auth.domain.verification.Verification;
@@ -52,9 +52,13 @@ class VerificationApiTest {
   @Autowired
   private VerificationService verificationService;
 
+  @Autowired
+  private FakeVerificationCodeGenerator fakeVerificationCodeGenerator;
+
   @BeforeEach
   void setUp() {
     fakeVerificationSender.clear();
+    fakeVerificationCodeGenerator.setFixedCode("123456");
   }
 
   @DisplayName("인증번호를 발급한다.")
@@ -114,7 +118,7 @@ class VerificationApiTest {
     Verification verification = verificationService.issue(createVerification);
 
     VerifyVerificationRequest request =
-        new VerifyVerificationRequest(verification.getId(), TestFixture.FIXED_CODE);
+        new VerifyVerificationRequest(verification.getId(), "123456");
 
     final var result = mvc.post()
         .uri("/verifications/verify")
@@ -162,8 +166,7 @@ class VerificationApiTest {
   @DisplayName("인증번호 식별자가 존재하지 않으면 인증에 실패한다.")
   @Test
   void verifyFailVerificationNotFound() throws JsonProcessingException {
-    VerifyVerificationRequest request =
-        new VerifyVerificationRequest(UUID.randomUUID(), TestFixture.FIXED_CODE);
+    VerifyVerificationRequest request = new VerifyVerificationRequest(UUID.randomUUID(), "123456");
 
     final var result = mvc.post()
         .uri("/verifications/verify")
@@ -182,10 +185,10 @@ class VerificationApiTest {
   void verifyFailAlreadyVerified() throws JsonProcessingException {
     CreateVerification createVerification = VerificationFixture.createVerification();
     Verification verification = verificationService.issue(createVerification);
-    verificationService.verify(verification.getId(), new VerificationCode(TestFixture.FIXED_CODE));
+    verificationService.verify(verification.getId(), new VerificationCode("123456"));
 
     VerifyVerificationRequest request =
-        new VerifyVerificationRequest(verification.getId(), TestFixture.FIXED_CODE);
+        new VerifyVerificationRequest(verification.getId(), "123456");
 
     final var result = mvc.post()
         .uri("/verifications/verify")
