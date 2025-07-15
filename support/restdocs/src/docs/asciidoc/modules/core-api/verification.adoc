@@ -1,8 +1,0 @@
-== 인증 API
-
-[[verification-issue]]
-=== 인증번호 발급
-
-인증번호를 발급합니다.
-
-operation::core-api/verification-issue[]

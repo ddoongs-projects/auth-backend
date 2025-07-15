@@ -4,8 +4,10 @@ import static java.util.Objects.requireNonNull;
 
 import com.ddoongs.auth.domain.shared.DefaultDateTime;
 import com.ddoongs.auth.domain.shared.Email;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+@AllArgsConstructor
 @Getter
 public class Member {
 
