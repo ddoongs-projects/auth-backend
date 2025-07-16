@@ -11,9 +11,11 @@ dependencies {
     implementation project(':support:monitoring')
 
     runtimeOnly project(':storage:db-core')
+
     runtimeOnly project(':infrastructure:verification-code')
     runtimeOnly project(':infrastructure:mail')
     runtimeOnly project(':infrastructure:crypto')
+    runtimeOnly project(':infrastructure:token')
 
     testImplementation testFixtures(project(':core:core-domain'))
     testImplementation project(":tests:api-docs")
