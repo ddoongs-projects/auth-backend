@@ -2,7 +2,6 @@ package com.ddoongs.auth.redis;
 
 import com.ddoongs.auth.domain.token.RefreshToken;
 import com.ddoongs.auth.domain.token.RefreshTokenRepository;
-import java.time.Duration;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -12,23 +11,27 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class RefreshTokenRedisRepository implements RefreshTokenRepository {
 
+  private static final String REFRESH_KEY_PREFIX = "refresh:";
+
   private final RedisTemplate<String, RefreshToken> redisTemplate;
 
   @Override
   public RefreshToken save(RefreshToken token) {
-    Duration ttl = token.remainingTtl();
-    redisTemplate.opsForValue().set(token.jti(), token, ttl);
+    String key = REFRESH_KEY_PREFIX + token.jti();
+    redisTemplate.opsForValue().set(key, token, token.remainingTtl());
     return token;
   }
 
   @Override
   public Optional<RefreshToken> find(String jti) {
-    RefreshToken token = redisTemplate.opsForValue().get(jti);
+    String key = REFRESH_KEY_PREFIX + jti;
+    RefreshToken token = redisTemplate.opsForValue().get(key);
     return Optional.ofNullable(token);
   }
 
   @Override
   public void delete(String jti) {
-    redisTemplate.delete(jti);
+    String key = "refresh:" + jti;
+    redisTemplate.delete(key);
   }
 }
