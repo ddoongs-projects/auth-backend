@@ -27,4 +27,9 @@ public class MemberCoreRepository implements MemberRepository {
   public boolean existsByEmail(Email email) {
     return memberJpaRepository.existsByEmail(email.address());
   }
+
+  @Override
+  public Optional<Member> findByEmail(Email email) {
+    return memberJpaRepository.findByEmail(email.address()).map(MemberJpo::toDomain);
+  }
 }

@@ -19,6 +19,8 @@ public class MemberService {
   private final MemberRepository memberRepository;
   private final MemberValidator memberValidator;
   private final VerificationRepository verificationRepository;
+  private final TokenProvider tokenProvider;
+  private final RefreshTokenRepository refreshTokenRepository;
 
   @Transactional
   public Member register(RegisterMember registerMember, UUID verificationId) {
@@ -35,5 +37,21 @@ public class MemberService {
     verificationRepository.save(verification);
 
     return memberRepository.save(member);
+  }
+
+  @Transactional
+  public TokenPair login(LoginMember loginMember) {
+    Member member = memberRepository
+        .findByEmail(new Email(loginMember.email()))
+        .orElseThrow(MemberNotFoundException::new);
+
+    member.validatePassword(loginMember.password(), passwordEncoder);
+
+    String accessToken = tokenProvider.createAccessToken(member);
+    RefreshToken refreshToken = tokenProvider.createRefreshToken(member);
+
+    refreshToken = refreshTokenRepository.save(refreshToken);
+
+    return new TokenPair(accessToken, refreshToken);
   }
 }

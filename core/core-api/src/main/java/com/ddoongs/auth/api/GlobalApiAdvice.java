@@ -124,7 +124,7 @@ public class GlobalApiAdvice {
 
   private ResponseEntity<ErrorResponse> buildResponse(BusinessException ex, HttpStatus status) {
     CoreErrorCode code = ex.getCode();
-    ErrorResponse body = new ErrorResponse(code.toString(), code.getDefaultMessage());
+    ErrorResponse body = new ErrorResponse(code.toString(), ex.getMessage());
 
     return ResponseEntity.status(status).body(body);
   }

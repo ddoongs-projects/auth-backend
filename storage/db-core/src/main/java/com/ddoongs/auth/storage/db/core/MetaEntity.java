@@ -16,7 +16,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 public abstract class MetaEntity {
 
   @Enumerated(EnumType.STRING)
-  @Column(name = "entityStatus", columnDefinition = "VARCHAR")
+  @Column(name = "entityStatus")
   private EntityStatus entityStatus = EntityStatus.ACTIVE;
 
   @Getter

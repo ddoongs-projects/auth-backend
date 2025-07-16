@@ -2,6 +2,7 @@ package com.ddoongs.auth.api.member;
 
 import com.ddoongs.auth.domain.member.Member;
 import com.ddoongs.auth.domain.member.MemberService;
+import com.ddoongs.auth.domain.member.TokenPair;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,5 +19,11 @@ public class MemberApi {
   public MemberRegisterResponse register(@RequestBody @Valid MemberRegisterRequest request) {
     Member member = memberService.register(request.toRegisterMember(), request.verificationId());
     return MemberRegisterResponse.of(member);
+  }
+
+  @PostMapping("/login")
+  public TokenResponse login(@RequestBody @Valid MemberLoginRequest request) {
+    TokenPair tokenPair = memberService.login(request.toLoginMember());
+    return TokenResponse.of(tokenPair);
   }
 }

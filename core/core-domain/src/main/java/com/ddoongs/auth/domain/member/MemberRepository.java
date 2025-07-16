@@ -10,4 +10,6 @@ public interface MemberRepository {
   Optional<Member> find(Long id);
 
   boolean existsByEmail(Email email);
+
+  Optional<Member> findByEmail(Email email);
 }
