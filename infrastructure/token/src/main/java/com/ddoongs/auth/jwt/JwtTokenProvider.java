@@ -2,9 +2,9 @@ package com.ddoongs.auth.jwt;
 
 import com.ddoongs.auth.domain.member.InvalidTokenException;
 import com.ddoongs.auth.domain.member.Member;
-import com.ddoongs.auth.domain.member.RefreshToken;
-import com.ddoongs.auth.domain.member.TokenExpiredException;
-import com.ddoongs.auth.domain.member.TokenProvider;
+import com.ddoongs.auth.domain.token.RefreshToken;
+import com.ddoongs.auth.domain.token.TokenExpiredException;
+import com.ddoongs.auth.domain.token.TokenProvider;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;

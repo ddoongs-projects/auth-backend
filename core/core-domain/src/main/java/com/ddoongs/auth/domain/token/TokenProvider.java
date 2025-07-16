@@ -1,5 +1,6 @@
-package com.ddoongs.auth.domain.member;
+package com.ddoongs.auth.domain.token;
 
+import com.ddoongs.auth.domain.member.Member;
 import java.time.Duration;
 
 public interface TokenProvider {

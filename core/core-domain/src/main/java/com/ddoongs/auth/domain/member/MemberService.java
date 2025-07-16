@@ -1,6 +1,10 @@
 package com.ddoongs.auth.domain.member;
 
 import com.ddoongs.auth.domain.shared.Email;
+import com.ddoongs.auth.domain.token.RefreshToken;
+import com.ddoongs.auth.domain.token.RefreshTokenRepository;
+import com.ddoongs.auth.domain.token.TokenPair;
+import com.ddoongs.auth.domain.token.TokenProvider;
 import com.ddoongs.auth.domain.verification.Verification;
 import com.ddoongs.auth.domain.verification.VerificationFinder;
 import com.ddoongs.auth.domain.verification.VerificationPurpose;

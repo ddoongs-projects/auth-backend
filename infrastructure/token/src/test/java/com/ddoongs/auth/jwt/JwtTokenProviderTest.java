@@ -6,10 +6,10 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 import com.ddoongs.auth.domain.member.InvalidTokenException;
 import com.ddoongs.auth.domain.member.Member;
-import com.ddoongs.auth.domain.member.RefreshToken;
-import com.ddoongs.auth.domain.member.TokenExpiredException;
 import com.ddoongs.auth.domain.support.FakePasswordEncoder;
 import com.ddoongs.auth.domain.support.MemberFixture;
+import com.ddoongs.auth.domain.token.RefreshToken;
+import com.ddoongs.auth.domain.token.TokenExpiredException;
 import java.time.Duration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

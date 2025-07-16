@@ -1,7 +1,7 @@
 package com.ddoongs.auth.redis;
 
-import com.ddoongs.auth.domain.member.RefreshToken;
-import com.ddoongs.auth.domain.member.RefreshTokenRepository;
+import com.ddoongs.auth.domain.token.RefreshToken;
+import com.ddoongs.auth.domain.token.RefreshTokenRepository;
 import java.time.Duration;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;

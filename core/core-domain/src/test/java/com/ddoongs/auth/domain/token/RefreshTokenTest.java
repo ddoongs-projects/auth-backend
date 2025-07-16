@@ -1,4 +1,4 @@
-package com.ddoongs.auth.domain.member;
+package com.ddoongs.auth.domain.token;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

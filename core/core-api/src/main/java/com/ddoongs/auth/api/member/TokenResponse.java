@@ -1,6 +1,6 @@
 package com.ddoongs.auth.api.member;
 
-import com.ddoongs.auth.domain.member.TokenPair;
+import com.ddoongs.auth.domain.token.TokenPair;
 
 public record TokenResponse(String accessToken, String refreshToken) {
 

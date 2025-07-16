@@ -2,7 +2,7 @@ package com.ddoongs.auth.api.member;
 
 import com.ddoongs.auth.domain.member.Member;
 import com.ddoongs.auth.domain.member.MemberService;
-import com.ddoongs.auth.domain.member.TokenPair;
+import com.ddoongs.auth.domain.token.TokenPair;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;

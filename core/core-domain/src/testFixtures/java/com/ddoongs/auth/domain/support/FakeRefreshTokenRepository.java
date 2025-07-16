@@ -1,7 +1,7 @@
 package com.ddoongs.auth.domain.support;
 
-import com.ddoongs.auth.domain.member.RefreshToken;
-import com.ddoongs.auth.domain.member.RefreshTokenRepository;
+import com.ddoongs.auth.domain.token.RefreshToken;
+import com.ddoongs.auth.domain.token.RefreshTokenRepository;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;

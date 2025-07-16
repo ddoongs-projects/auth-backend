@@ -1,4 +1,4 @@
-package com.ddoongs.auth.domain.member;
+package com.ddoongs.auth.domain.token;
 
 import java.util.Optional;
 
