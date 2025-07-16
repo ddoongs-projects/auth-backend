@@ -56,4 +56,16 @@ class PasswordTest {
     assertThatThrownBy(() -> Password.of(invalidPassword, passwordEncoder))
         .isInstanceOf(IllegalArgumentException.class);
   }
+
+  @Test
+  void matches() {
+    Password password = Password.of("123qwe!@#", passwordEncoder);
+    String samePassword = "123qwe!@#";
+
+    assertThat(password.matches(samePassword, passwordEncoder)).isTrue();
+
+    String differentPassword = "456rty%$^";
+
+    assertThat(password.matches(differentPassword, passwordEncoder)).isFalse();
+  }
 }

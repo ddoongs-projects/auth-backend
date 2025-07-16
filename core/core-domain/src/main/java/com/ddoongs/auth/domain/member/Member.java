@@ -26,4 +26,10 @@ public class Member {
 
     return member;
   }
+
+  public void validatePassword(String password, PasswordEncoder passwordEncoder) {
+    if (!this.password.matches(password, passwordEncoder)) {
+      throw new PasswordMismatchException();
+    }
+  }
 }

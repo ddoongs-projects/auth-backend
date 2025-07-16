@@ -24,3 +24,5 @@ include 'tests:api-docs'
 include 'infrastructure:verification-code'
 include 'infrastructure:mail'
 include 'infrastructure:crypto'
+include 'infrastructure:token'
+

@@ -1,6 +1,7 @@
 package com.ddoongs.auth.domain.member;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.ddoongs.auth.domain.support.MemberFixture;
@@ -55,5 +56,17 @@ class MemberTest {
   void registerFailInvalidValue(String email, String password) {
     assertThatThrownBy(() -> Member.register(new RegisterMember(email, password), passwordEncoder))
         .isInstanceOf(IllegalArgumentException.class);
+  }
+
+  @Test
+  void validatePassword() {
+    Member member =
+        Member.register(new RegisterMember("test@test.com", "123qwe!@#"), passwordEncoder);
+
+    assertThatCode(() -> member.validatePassword("123qwe!@#", passwordEncoder))
+        .doesNotThrowAnyException();
+
+    assertThatThrownBy(() -> member.validatePassword("456rty$%^", passwordEncoder))
+        .isInstanceOf(PasswordMismatchException.class);
   }
 }

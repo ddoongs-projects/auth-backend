@@ -25,4 +25,8 @@ public class Password {
     String passwordHash = passwordEncoder.encode(password);
     return new Password(passwordHash);
   }
+
+  public boolean matches(String password, PasswordEncoder passwordEncoder) {
+    return passwordEncoder.matches(password, this.passwordHash);
+  }
 }
