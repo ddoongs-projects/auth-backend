@@ -15,6 +15,7 @@ dependencies {
     runtimeOnly project(':infrastructure:verification-code')
     runtimeOnly project(':infrastructure:mail')
     runtimeOnly project(':infrastructure:crypto')
+    runtimeOnly project(':infrastructure:redis')
     runtimeOnly project(':infrastructure:token')
 
     testImplementation testFixtures(project(':core:core-domain'))
