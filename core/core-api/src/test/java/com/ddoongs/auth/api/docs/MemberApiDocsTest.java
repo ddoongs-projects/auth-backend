@@ -9,13 +9,18 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.requestF
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 
 import com.ddoongs.auth.api.member.MemberApi;
+import com.ddoongs.auth.api.member.MemberLoginRequest;
 import com.ddoongs.auth.api.member.MemberRegisterRequest;
 import com.ddoongs.auth.domain.member.Member;
 import com.ddoongs.auth.domain.member.MemberService;
 import com.ddoongs.auth.domain.member.PasswordEncoder;
+import com.ddoongs.auth.domain.member.RefreshToken;
+import com.ddoongs.auth.domain.member.TokenPair;
 import com.ddoongs.auth.domain.support.MemberFixture;
 import com.ddoongs.auth.domain.support.TestFixture;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -72,5 +77,35 @@ class MemberApiDocsTest {
             responseFields(
                 fieldWithPath("memberId").description("회원 식별자"),
                 fieldWithPath("email").description("회원 이메일"))));
+  }
+
+  @DisplayName("로그인 API 문서 생성")
+  @Test
+  void login() throws Exception {
+    final var request = new MemberLoginRequest("test@email.com", "123asd!@#");
+
+    given(memberService.login(any()))
+        .willReturn(new TokenPair(
+            "sample.access.token",
+            new RefreshToken(
+                UUID.randomUUID().toString(),
+                "test@email.com",
+                Instant.now().plus(Duration.ofDays(7)),
+                "sample.refresh.token")));
+
+    assertThat(mvc.post()
+            .uri("/login")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request))
+            .exchange())
+        .hasStatusOk()
+        .apply(document(
+            "member-login",
+            requestFields(
+                fieldWithPath("email").description("이메일"),
+                fieldWithPath("password").description("비밀번호")),
+            responseFields(
+                fieldWithPath("accessToken").description("JWT access token"),
+                fieldWithPath("refreshToken").description("JWT refresh token"))));
   }
 }
