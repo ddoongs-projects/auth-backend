@@ -1,6 +1,7 @@
 package com.ddoongs.auth.domain.support;
 
 import com.ddoongs.auth.domain.member.PasswordEncoder;
+import com.ddoongs.auth.domain.member.RefreshTokenRepository;
 import com.ddoongs.auth.domain.verification.VerificationCodeGenerator;
 
 public class TestFixture {
@@ -20,5 +21,9 @@ public class TestFixture {
         new FakeVerificationCodeGenerator();
     fakeVerificationCodeGenerator.setFixedCode(code);
     return fakeVerificationCodeGenerator;
+  }
+
+  public static RefreshTokenRepository refreshTokenRepository() {
+    return new FakeRefreshTokenRepository();
   }
 }

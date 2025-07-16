@@ -10,10 +10,10 @@ spring:
 spring.config.activate.on-profile: local
 
 spring:
-  sql:
-    init:
-      mode: always
-      data-locations: classpath:data.sql
+  #  sql:
+  #    init:
+  #      mode: always
+  #      data-locations: classpath:data.sql
   jpa:
     defer-datasource-initialization: true
     generate-ddl: true

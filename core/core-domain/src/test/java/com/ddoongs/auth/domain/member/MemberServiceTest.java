@@ -45,6 +45,12 @@ class MemberServiceTest {
   @Autowired
   private VerificationFinder verificationFinder;
 
+  @Autowired
+  private RefreshTokenRepository refreshTokenRepository;
+
+  @Autowired
+  private TokenProvider tokenProvider;
+
   @BeforeEach
   void setup() {
     verificationCodeGenerator.setFixedCode("123456");
@@ -145,5 +151,42 @@ class MemberServiceTest {
 
     verificationService.verify(verification.getId(), new VerificationCode("123456"));
     return verification;
+  }
+
+  @DisplayName("로그인을 할 수 있다.")
+  @Test
+  void login() {
+    String email = "test@test.com";
+    String password = "123qwe!@#";
+    Verification verification = prepareRegister(email);
+    memberService.register(new RegisterMember(email, password), verification.getId());
+
+    TokenPair tokenPair = memberService.login(new LoginMember(email, password));
+
+    assertThat(tokenPair.accessToken()).isNotNull();
+    assertThat(tokenPair.refreshToken()).isNotNull();
+
+    String jti = tokenProvider.extractJti(tokenPair.refreshToken().token());
+
+    assertThat(refreshTokenRepository.find(jti)).isPresent();
+  }
+
+  @DisplayName("비밀번호가 일치하지 않으면 로그인에 실패한다.")
+  @Test
+  void loginFailDifferentPassword() {
+    String email = "test@test.com";
+    String password = "123qwe!@#";
+    Verification verification = prepareRegister(email);
+    memberService.register(new RegisterMember(email, password), verification.getId());
+
+    assertThatThrownBy(() -> memberService.login(new LoginMember(email, "456rty$%^")))
+        .isInstanceOf(PasswordMismatchException.class);
+  }
+
+  @DisplayName("회원 정보가 존재하지 않으면 로그인에 실패한다.")
+  @Test
+  void loginFailNotExistEmail() {
+    assertThatThrownBy(() -> memberService.login(new LoginMember("test@test.com", "456rty$%^")))
+        .isInstanceOf(MemberNotFoundException.class);
   }
 }
