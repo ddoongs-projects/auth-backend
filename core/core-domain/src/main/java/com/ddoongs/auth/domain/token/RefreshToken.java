@@ -1,13 +1,14 @@
 package com.ddoongs.auth.domain.token;
 
+import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Objects;
 
 public record RefreshToken(String jti, String subject, Instant expiresAt, String token) {
 
-  public Duration remainingTtl() {
-    Duration diff = Duration.between(Instant.now(), expiresAt);
+  public Duration remainingTtl(Clock clock) {
+    Duration diff = Duration.between(Instant.now(clock), expiresAt);
     return diff.isNegative() ? Duration.ZERO : diff;
   }
 
@@ -27,7 +28,7 @@ public record RefreshToken(String jti, String subject, Instant expiresAt, String
     return Objects.hash(jti);
   }
 
-  public boolean canBeRenewed(Duration renewThreshold) {
-    return this.remainingTtl().minus(renewThreshold).isNegative();
+  public boolean canBeRenewed(Duration renewThreshold, Clock clock) {
+    return this.remainingTtl(clock).minus(renewThreshold).isNegative();
   }
 }

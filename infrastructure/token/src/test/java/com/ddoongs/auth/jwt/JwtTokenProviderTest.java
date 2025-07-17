@@ -10,6 +10,7 @@ import com.ddoongs.auth.domain.support.FakePasswordEncoder;
 import com.ddoongs.auth.domain.support.MemberFixture;
 import com.ddoongs.auth.domain.token.RefreshToken;
 import com.ddoongs.auth.domain.token.TokenExpiredException;
+import java.time.Clock;
 import java.time.Duration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -25,7 +26,7 @@ class JwtTokenProviderTest {
 
   @BeforeEach
   void setUp() {
-    jwtTokenProvider = new JwtTokenProvider(TEST_SECRET);
+    jwtTokenProvider = new JwtTokenProvider(TEST_SECRET, Clock.systemDefaultZone());
     testMember = MemberFixture.member(new FakePasswordEncoder());
   }
 
@@ -43,7 +44,8 @@ class JwtTokenProviderTest {
   @DisplayName("만료된 토큰은 TokenExpiredException을 발생시킨다")
   void validate_expiredToken_shouldThrowTokenExpiredException() {
     // given
-    JwtTokenProvider expiredTokenProvider = new JwtTokenProvider(TEST_SECRET);
+    JwtTokenProvider expiredTokenProvider =
+        new JwtTokenProvider(TEST_SECRET, Clock.systemDefaultZone());
     String expiredToken = expiredTokenProvider.createAccessToken(testMember, Duration.ZERO);
 
     // when & then
@@ -67,7 +69,8 @@ class JwtTokenProviderTest {
   void validate_wrongSignatureToken_shouldThrowInvalidTokenException() {
     // given
     JwtTokenProvider otherProvider = new JwtTokenProvider(
-        "b3RoZXItc2VjcmV0LWtleS1vdGhlci1zZWNyZXQta2V5LW90aGVyLXNlY3JldC1rZXk=");
+        "b3RoZXItc2VjcmV0LWtleS1vdGhlci1zZWNyZXQta2V5LW90aGVyLXNlY3JldC1rZXk=",
+        Clock.systemDefaultZone());
     String tokenWithWrongSignature =
         otherProvider.createAccessToken(testMember, Duration.ofDays(1));
 
@@ -104,9 +107,10 @@ class JwtTokenProviderTest {
 
   @Test
   @DisplayName("Access Token의 남은 유효시간(TTL)을 계산한다")
-  void getRemainingAccessTtl_success() throws InterruptedException {
+  void getRemainingAccessTtl_success() {
     // given
-    JwtTokenProvider shortLivedTokenProvider = new JwtTokenProvider(TEST_SECRET);
+    JwtTokenProvider shortLivedTokenProvider =
+        new JwtTokenProvider(TEST_SECRET, Clock.systemDefaultZone());
     String accessToken =
         shortLivedTokenProvider.createAccessToken(testMember, Duration.ofSeconds(1));
 

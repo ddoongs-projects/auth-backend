@@ -7,6 +7,7 @@ import com.ddoongs.auth.domain.member.MemberNotFoundException;
 import com.ddoongs.auth.domain.member.MemberRepository;
 import com.ddoongs.auth.domain.member.PasswordEncoder;
 import com.ddoongs.auth.domain.shared.Email;
+import java.time.Clock;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +23,7 @@ public class TokenService {
   private final MemberRepository memberRepository;
   private final TokenValidator tokenValidator;
   private final TokenIssuer tokenIssuer;
+  private final Clock clock;
 
   @Transactional
   public TokenPair login(LoginMember loginMember) {
@@ -98,6 +100,6 @@ public class TokenService {
         refreshTokenRepository.find(jti).orElseThrow(InvalidTokenException::new);
 
     refreshTokenRepository.delete(jti);
-    blacklistTokenRepository.save(jti, oldToken.remainingTtl());
+    blacklistTokenRepository.save(jti, oldToken.remainingTtl(clock));
   }
 }

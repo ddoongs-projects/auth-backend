@@ -9,8 +9,10 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.impl.FixedClock;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
@@ -23,9 +25,11 @@ import org.springframework.stereotype.Component;
 public class JwtTokenProvider implements TokenProvider {
 
   private final SecretKey key;
+  private final Clock clock;
 
-  public JwtTokenProvider(@Value("${jwt.secret}") String secret) {
+  public JwtTokenProvider(@Value("${jwt.secret}") String secret, Clock clock) {
     this.key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret));
+    this.clock = clock;
   }
 
   private static String extractSubject(Member member) {
@@ -55,7 +59,12 @@ public class JwtTokenProvider implements TokenProvider {
 
   private Claims getClaims(String token) {
     try {
-      return Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
+      return Jwts.parser()
+          .verifyWith(key)
+          .clock(new FixedClock(Date.from(clock.instant())))
+          .build()
+          .parseSignedClaims(token)
+          .getPayload();
     } catch (ExpiredJwtException e) {
       throw new TokenExpiredException();
     } catch (JwtException | IllegalArgumentException e) {
@@ -66,7 +75,7 @@ public class JwtTokenProvider implements TokenProvider {
   public String createAccessToken(Member member, Duration accessExpires) {
     String subject = extractSubject(member);
 
-    Instant now = Instant.now();
+    Instant now = Instant.now(clock);
     Instant exp = now.plus(accessExpires);
 
     String jti = UUID.randomUUID().toString();
@@ -87,7 +96,7 @@ public class JwtTokenProvider implements TokenProvider {
     String subject = extractSubject(member);
 
     String jti = UUID.randomUUID().toString();
-    Instant now = Instant.now();
+    Instant now = Instant.now(clock);
     Instant exp = now.plus(refreshExpires);
 
     String token = createToken(jti, subject, now, exp);
