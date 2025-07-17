@@ -5,12 +5,19 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.ddoongs.auth.TestApplication;
 import com.ddoongs.auth.domain.AuthTestConfiguration;
+import com.ddoongs.auth.domain.ServiceTestSupport;
 import com.ddoongs.auth.domain.member.InvalidTokenException;
+import com.ddoongs.auth.domain.member.LoginMember;
 import com.ddoongs.auth.domain.member.Member;
 import com.ddoongs.auth.domain.member.MemberNotFoundException;
 import com.ddoongs.auth.domain.member.MemberRepository;
+import com.ddoongs.auth.domain.member.MemberService;
 import com.ddoongs.auth.domain.member.Password;
+import com.ddoongs.auth.domain.member.PasswordMismatchException;
+import com.ddoongs.auth.domain.member.RegisterMember;
 import com.ddoongs.auth.domain.shared.Email;
+import com.ddoongs.auth.domain.verification.Verification;
+import com.ddoongs.auth.domain.verification.VerificationService;
 import java.time.Duration;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -43,7 +50,47 @@ class TokenServiceTest {
   private MemberRepository memberRepository;
 
   @Autowired
-  private TokenValidator tokenValidator;
+  private VerificationService verificationService;
+
+  @Autowired
+  private MemberService memberService;
+
+  @DisplayName("로그인을 할 수 있다.")
+  @Test
+  void login() {
+    String email = "test@test.com";
+    String password = "123qwe!@#";
+    Verification verification = ServiceTestSupport.prepareRegister(verificationService, email);
+    memberService.register(new RegisterMember(email, password), verification.getId());
+
+    TokenPair tokenPair = tokenService.login(new LoginMember(email, password));
+
+    assertThat(tokenPair.accessToken()).isNotNull();
+    assertThat(tokenPair.refreshToken()).isNotNull();
+
+    String jti = tokenProvider.extractJti(tokenPair.refreshToken().token());
+
+    assertThat(refreshTokenRepository.find(jti)).isPresent();
+  }
+
+  @DisplayName("비밀번호가 일치하지 않으면 로그인에 실패한다.")
+  @Test
+  void loginFailDifferentPassword() {
+    String email = "test@test.com";
+    String password = "123qwe!@#";
+    Verification verification = ServiceTestSupport.prepareRegister(verificationService, email);
+    memberService.register(new RegisterMember(email, password), verification.getId());
+
+    assertThatThrownBy(() -> tokenService.login(new LoginMember(email, "456rty$%^")))
+        .isInstanceOf(PasswordMismatchException.class);
+  }
+
+  @DisplayName("회원 정보가 존재하지 않으면 로그인에 실패한다.")
+  @Test
+  void loginFailNotExistEmail() {
+    assertThatThrownBy(() -> tokenService.login(new LoginMember("test@test.com", "456rty$%^")))
+        .isInstanceOf(MemberNotFoundException.class);
+  }
 
   @Test
   @DisplayName("유효한 리프레시 토큰으로 재발급 시 새로운 토큰 쌍을 발급한다")

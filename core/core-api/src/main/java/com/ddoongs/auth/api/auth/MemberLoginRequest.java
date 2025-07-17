@@ -1,4 +1,4 @@
-package com.ddoongs.auth.api.member;
+package com.ddoongs.auth.api.auth;
 
 import com.ddoongs.auth.domain.member.LoginMember;
 

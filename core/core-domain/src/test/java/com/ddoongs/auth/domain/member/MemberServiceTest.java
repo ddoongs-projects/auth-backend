@@ -5,15 +5,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.ddoongs.auth.TestApplication;
 import com.ddoongs.auth.domain.AuthTestConfiguration;
+import com.ddoongs.auth.domain.ServiceTestSupport;
 import com.ddoongs.auth.domain.shared.Email;
 import com.ddoongs.auth.domain.support.FakeVerificationCodeGenerator;
 import com.ddoongs.auth.domain.support.MemberFixture;
-import com.ddoongs.auth.domain.token.RefreshTokenRepository;
-import com.ddoongs.auth.domain.token.TokenPair;
-import com.ddoongs.auth.domain.token.TokenProvider;
 import com.ddoongs.auth.domain.verification.CreateVerification;
 import com.ddoongs.auth.domain.verification.Verification;
-import com.ddoongs.auth.domain.verification.VerificationCode;
 import com.ddoongs.auth.domain.verification.VerificationFinder;
 import com.ddoongs.auth.domain.verification.VerificationMismatchException;
 import com.ddoongs.auth.domain.verification.VerificationNotCompletedException;
@@ -48,12 +45,6 @@ class MemberServiceTest {
   @Autowired
   private VerificationFinder verificationFinder;
 
-  @Autowired
-  private RefreshTokenRepository refreshTokenRepository;
-
-  @Autowired
-  private TokenProvider tokenProvider;
-
   @BeforeEach
   void setup() {
     verificationCodeGenerator.setFixedCode("123456");
@@ -63,7 +54,7 @@ class MemberServiceTest {
   @Test
   void register() {
     String email = "test@test.com";
-    Verification verification = prepareRegister(email);
+    Verification verification = ServiceTestSupport.prepareRegister(verificationService, email);
 
     Member member =
         memberService.register(MemberFixture.registerMember(email), verification.getId());
@@ -84,7 +75,7 @@ class MemberServiceTest {
 
     memberRepository.save(new Member(null, new Email(email), new Password("123123123"), null));
 
-    Verification verification2 = prepareRegister(email);
+    Verification verification2 = ServiceTestSupport.prepareRegister(verificationService, email);
 
     assertThatThrownBy(() ->
             memberService.register(MemberFixture.registerMember(email), verification2.getId()))
@@ -145,51 +136,5 @@ class MemberServiceTest {
     Verification foundVerification = verificationFinder.find(verification.getId());
 
     assertThat(foundVerification.getStatus()).isNotEqualTo(VerificationStatus.CONSUMED);
-  }
-
-  private Verification prepareRegister(String email) {
-    CreateVerification createVerification =
-        new CreateVerification(new Email(email), VerificationPurpose.REGISTER);
-    Verification verification = verificationService.issue(createVerification);
-
-    verificationService.verify(verification.getId(), new VerificationCode("123456"));
-    return verification;
-  }
-
-  @DisplayName("로그인을 할 수 있다.")
-  @Test
-  void login() {
-    String email = "test@test.com";
-    String password = "123qwe!@#";
-    Verification verification = prepareRegister(email);
-    memberService.register(new RegisterMember(email, password), verification.getId());
-
-    TokenPair tokenPair = memberService.login(new LoginMember(email, password));
-
-    assertThat(tokenPair.accessToken()).isNotNull();
-    assertThat(tokenPair.refreshToken()).isNotNull();
-
-    String jti = tokenProvider.extractJti(tokenPair.refreshToken().token());
-
-    assertThat(refreshTokenRepository.find(jti)).isPresent();
-  }
-
-  @DisplayName("비밀번호가 일치하지 않으면 로그인에 실패한다.")
-  @Test
-  void loginFailDifferentPassword() {
-    String email = "test@test.com";
-    String password = "123qwe!@#";
-    Verification verification = prepareRegister(email);
-    memberService.register(new RegisterMember(email, password), verification.getId());
-
-    assertThatThrownBy(() -> memberService.login(new LoginMember(email, "456rty$%^")))
-        .isInstanceOf(PasswordMismatchException.class);
-  }
-
-  @DisplayName("회원 정보가 존재하지 않으면 로그인에 실패한다.")
-  @Test
-  void loginFailNotExistEmail() {
-    assertThatThrownBy(() -> memberService.login(new LoginMember("test@test.com", "456rty$%^")))
-        .isInstanceOf(MemberNotFoundException.class);
   }
 }

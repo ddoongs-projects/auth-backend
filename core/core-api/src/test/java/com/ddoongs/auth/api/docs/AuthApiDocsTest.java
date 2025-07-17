@@ -8,16 +8,15 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWit
 import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 
+import com.ddoongs.auth.api.auth.MemberLoginRequest;
 import com.ddoongs.auth.api.member.MemberApi;
-import com.ddoongs.auth.api.member.MemberRegisterRequest;
-import com.ddoongs.auth.domain.member.Member;
-import com.ddoongs.auth.domain.member.MemberService;
-import com.ddoongs.auth.domain.member.PasswordEncoder;
-import com.ddoongs.auth.domain.support.MemberFixture;
-import com.ddoongs.auth.domain.support.TestFixture;
+import com.ddoongs.auth.domain.token.RefreshToken;
+import com.ddoongs.auth.domain.token.TokenPair;
+import com.ddoongs.auth.domain.token.TokenService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -30,7 +29,7 @@ import org.springframework.test.web.servlet.assertj.MockMvcTester;
 @AutoConfigureRestDocs
 @WebMvcTest(MemberApi.class)
 @Tag("restdocs")
-class MemberApiDocsTest {
+class AuthApiDocsTest {
 
   @Autowired
   private MockMvcTester mvc;
@@ -39,38 +38,35 @@ class MemberApiDocsTest {
   private ObjectMapper objectMapper;
 
   @Autowired
-  private PasswordEncoder passwordEncoder;
+  private TokenService tokenService;
 
-  @Autowired
-  private MemberService memberService;
-
-  @BeforeEach
-  void setup() {
-    passwordEncoder = TestFixture.passwordEncoder();
-  }
-
-  @DisplayName("회원등록 API 문서 생성")
+  @DisplayName("로그인 API 문서 생성")
   @Test
-  void register() throws Exception {
-    final var request = new MemberRegisterRequest("test@email.com", "123asd!@#", UUID.randomUUID());
-    final Member member = MemberFixture.member(passwordEncoder);
+  void login() throws Exception {
+    final var request = new MemberLoginRequest("test@email.com", "123asd!@#");
 
-    given(memberService.register(any(), any())).willReturn(member);
+    given(tokenService.login(any()))
+        .willReturn(new TokenPair(
+            "sample.access.token",
+            new RefreshToken(
+                UUID.randomUUID().toString(),
+                "test@email.com",
+                Instant.now().plus(Duration.ofDays(7)),
+                "sample.refresh.token")));
 
     assertThat(mvc.post()
-            .uri("/members")
+            .uri("/auth/login")
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(request))
             .exchange())
         .hasStatusOk()
         .apply(document(
-            "member-register",
+            "member-login",
             requestFields(
                 fieldWithPath("email").description("이메일"),
-                fieldWithPath("password").description("비밀번호"),
-                fieldWithPath("verificationId").description("인증이 완료된 인증 식별자")),
+                fieldWithPath("password").description("비밀번호")),
             responseFields(
-                fieldWithPath("memberId").description("회원 식별자"),
-                fieldWithPath("email").description("회원 이메일"))));
+                fieldWithPath("accessToken").description("JWT access token"),
+                fieldWithPath("refreshToken").description("JWT refresh token"))));
   }
 }

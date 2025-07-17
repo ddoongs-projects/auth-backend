@@ -1,9 +1,11 @@
 package com.ddoongs.auth.domain.token;
 
 import com.ddoongs.auth.domain.member.InvalidTokenException;
+import com.ddoongs.auth.domain.member.LoginMember;
 import com.ddoongs.auth.domain.member.Member;
 import com.ddoongs.auth.domain.member.MemberNotFoundException;
 import com.ddoongs.auth.domain.member.MemberRepository;
+import com.ddoongs.auth.domain.member.PasswordEncoder;
 import com.ddoongs.auth.domain.shared.Email;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -13,12 +15,29 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class TokenService {
 
+  private final PasswordEncoder passwordEncoder;
   private final RefreshTokenRepository refreshTokenRepository;
   private final BlacklistTokenRepository blacklistTokenRepository;
   private final TokenProvider tokenProvider;
   private final MemberRepository memberRepository;
   private final TokenValidator tokenValidator;
   private final TokenIssuer tokenIssuer;
+
+  @Transactional
+  public TokenPair login(LoginMember loginMember) {
+    Member member = memberRepository
+        .findByEmail(new Email(loginMember.email()))
+        .orElseThrow(MemberNotFoundException::new);
+
+    member.validatePassword(loginMember.password(), passwordEncoder);
+
+    String accessToken = tokenIssuer.issueAccessToken(member);
+    RefreshToken refreshToken = tokenIssuer.issueRefreshToken(member);
+
+    refreshToken = refreshTokenRepository.save(refreshToken);
+
+    return new TokenPair(accessToken, refreshToken);
+  }
 
   @Transactional
   public TokenPair reissue(String refreshTokenValue) {

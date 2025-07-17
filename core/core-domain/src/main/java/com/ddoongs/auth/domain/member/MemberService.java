@@ -1,10 +1,6 @@
 package com.ddoongs.auth.domain.member;
 
 import com.ddoongs.auth.domain.shared.Email;
-import com.ddoongs.auth.domain.token.RefreshToken;
-import com.ddoongs.auth.domain.token.RefreshTokenRepository;
-import com.ddoongs.auth.domain.token.TokenIssuer;
-import com.ddoongs.auth.domain.token.TokenPair;
 import com.ddoongs.auth.domain.verification.Verification;
 import com.ddoongs.auth.domain.verification.VerificationFinder;
 import com.ddoongs.auth.domain.verification.VerificationPurpose;
@@ -23,8 +19,6 @@ public class MemberService {
   private final MemberRepository memberRepository;
   private final MemberValidator memberValidator;
   private final VerificationRepository verificationRepository;
-  private final RefreshTokenRepository refreshTokenRepository;
-  private final TokenIssuer tokenIssuer;
 
   @Transactional
   public Member register(RegisterMember registerMember, UUID verificationId) {
@@ -41,21 +35,5 @@ public class MemberService {
     verificationRepository.save(verification);
 
     return memberRepository.save(member);
-  }
-
-  @Transactional
-  public TokenPair login(LoginMember loginMember) {
-    Member member = memberRepository
-        .findByEmail(new Email(loginMember.email()))
-        .orElseThrow(MemberNotFoundException::new);
-
-    member.validatePassword(loginMember.password(), passwordEncoder);
-
-    String accessToken = tokenIssuer.issueAccessToken(member);
-    RefreshToken refreshToken = tokenIssuer.issueRefreshToken(member);
-
-    refreshToken = refreshTokenRepository.save(refreshToken);
-
-    return new TokenPair(accessToken, refreshToken);
   }
 }
