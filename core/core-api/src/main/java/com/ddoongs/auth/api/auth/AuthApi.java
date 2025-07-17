@@ -19,4 +19,16 @@ public class AuthApi {
     TokenPair tokenPair = tokenService.login(request.toLoginMember());
     return TokenResponse.of(tokenPair);
   }
+
+  @PostMapping("/auth/reissue")
+  public TokenResponse reissue(@RequestBody @Valid ReissueRequest request) {
+    TokenPair tokenPair = tokenService.reissue(request.refreshToken());
+    return TokenResponse.of(tokenPair);
+  }
+
+  @PostMapping("/auth/renew")
+  public TokenResponse renew(@RequestBody @Valid RenewRequest request) {
+    TokenPair tokenPair = tokenService.renew(request.refreshToken());
+    return TokenResponse.of(tokenPair);
+  }
 }

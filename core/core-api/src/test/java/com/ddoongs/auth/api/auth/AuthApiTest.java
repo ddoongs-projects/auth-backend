@@ -5,14 +5,17 @@ import static com.ddoongs.auth.domain.util.AssertThatUtils.notNull;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.ddoongs.auth.domain.AuthTestConfiguration;
+import com.ddoongs.auth.domain.member.LoginMember;
 import com.ddoongs.auth.domain.member.MemberService;
 import com.ddoongs.auth.domain.member.RegisterMember;
 import com.ddoongs.auth.domain.shared.CoreErrorCode;
 import com.ddoongs.auth.domain.shared.Email;
+import com.ddoongs.auth.domain.support.FakeClock;
 import com.ddoongs.auth.domain.support.FakeVerificationCodeGenerator;
 import com.ddoongs.auth.domain.token.RefreshToken;
 import com.ddoongs.auth.domain.token.RefreshTokenRepository;
 import com.ddoongs.auth.domain.token.TokenProvider;
+import com.ddoongs.auth.domain.token.TokenService;
 import com.ddoongs.auth.domain.verification.CreateVerification;
 import com.ddoongs.auth.domain.verification.Verification;
 import com.ddoongs.auth.domain.verification.VerificationCode;
@@ -21,6 +24,8 @@ import com.ddoongs.auth.domain.verification.VerificationService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.UnsupportedEncodingException;
+import java.time.Duration;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,6 +63,17 @@ class AuthApiTest {
 
   @Autowired
   private TokenProvider tokenProvider;
+
+  @Autowired
+  private TokenService tokenService;
+
+  @Autowired
+  private FakeClock fakeClock;
+
+  @BeforeEach
+  void setup() {
+    fakeClock.resetToNow();
+  }
 
   @DisplayName("로그인을 진행한다.")
   @Test
@@ -137,5 +153,142 @@ class AuthApiTest {
         new CreateVerification(new Email(email), VerificationPurpose.REGISTER));
     verificationService.verify(verification.getId(), new VerificationCode("123456"));
     memberService.register(new RegisterMember(email, password), verification.getId());
+  }
+
+  @DisplayName("토큰을 reissue 받는다.")
+  @Test
+  void reissue() throws Exception {
+    String email = "test@email.com";
+    String password = "123qwe!@#";
+
+    registerMember(email, password);
+
+    final var tokenPair = tokenService.login(new LoginMember(email, password));
+
+    final var request = new ReissueRequest(tokenPair.refreshToken().token());
+
+    final var result = mvc.post()
+        .uri("/auth/reissue")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(request))
+        .exchange();
+
+    assertThat(result)
+        .hasStatusOk()
+        .bodyJson()
+        .hasPathSatisfying("$.accessToken", notNull())
+        .hasPathSatisfying("$.refreshToken", notNull());
+  }
+
+  @DisplayName("잘못된 리프레시 토큰으로는 reissue에 실패한다.")
+  @Test
+  void reissueFail() throws Exception {
+    String email = "test@email.com";
+    String password = "123qwe!@#";
+
+    registerMember(email, password);
+
+    final var tokenPair = tokenService.login(new LoginMember(email, password));
+
+    fakeClock.plus(Duration.ofDays(50));
+
+    final var request = new ReissueRequest(tokenPair.refreshToken().token());
+
+    final var result = mvc.post()
+        .uri("/auth/reissue")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(request))
+        .exchange();
+
+    assertThat(result)
+        .hasStatus(HttpStatus.UNAUTHORIZED)
+        .bodyJson()
+        .hasPathSatisfying("$.code", equalsTo(CoreErrorCode.EXPIRED_TOKEN.toString()));
+  }
+
+  @DisplayName("만료된 리프레시 토큰으로는 reissue에 실패한다.")
+  @Test
+  void reissueFailWithExpiredToken() throws Exception {
+    final var request = new ReissueRequest("invalid-token");
+
+    final var result = mvc.post()
+        .uri("/auth/reissue")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(request))
+        .exchange();
+
+    assertThat(result)
+        .hasStatus(HttpStatus.UNAUTHORIZED)
+        .bodyJson()
+        .hasPathSatisfying("$.code", equalsTo(CoreErrorCode.INVALID_TOKEN.toString()));
+  }
+
+  @DisplayName("리프레시 토큰을 renew한다.")
+  @Test
+  void renew() throws Exception {
+    String email = "test@email.com";
+    String password = "123qwe!@#";
+
+    registerMember(email, password);
+
+    final var tokenPair = tokenService.login(new LoginMember(email, password));
+
+    fakeClock.plus(Duration.ofDays(6));
+
+    final var request = new RenewRequest(tokenPair.refreshToken().token());
+
+    final var result = mvc.post()
+        .uri("/auth/renew")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(request))
+        .exchange();
+
+    assertThat(result)
+        .hasStatusOk()
+        .bodyJson()
+        .hasPathSatisfying("$.accessToken", notNull())
+        .hasPathSatisfying("$.refreshToken", notNull());
+  }
+
+  @DisplayName("threshold 때는 renew에 실패한다.")
+  @Test
+  void renewFailWithThreshold() throws Exception {
+    String email = "test@email.com";
+    String password = "123qwe!@#";
+
+    registerMember(email, password);
+
+    final var tokenPair = tokenService.login(new LoginMember(email, password));
+
+    final var request = new RenewRequest(tokenPair.refreshToken().token());
+
+    final var result = mvc.post()
+        .uri("/auth/renew")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(request))
+        .exchange();
+
+    assertThat(result)
+        .hasStatus(HttpStatus.UNAUTHORIZED)
+        .bodyJson()
+        .hasPathSatisfying(
+            "$.code", equalsTo(CoreErrorCode.TOKEN_RENEWAL_CONDITION_NOT_MET.toString()));
+  }
+
+  @DisplayName("잘못된 리프레시 토큰으로는 renew에 실패한다.")
+  @Test
+  void renewFail() throws Exception {
+    final var request = new RenewRequest("invalid-token");
+
+    final var result = mvc.post()
+        .uri("/auth/renew")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(request))
+        .exchange();
+
+    assertThat(result)
+        .hasStatus(HttpStatus.UNAUTHORIZED)
+        .bodyJson()
+        .hasPathSatisfying("$.code", equalsTo(CoreErrorCode.INVALID_TOKEN.toString()));
   }
 }
