@@ -6,13 +6,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.ddoongs.auth.TestApplication;
 import com.ddoongs.auth.domain.AuthTestConfiguration;
 import com.ddoongs.auth.domain.ServiceTestSupport;
-import com.ddoongs.auth.domain.member.InvalidTokenException;
-import com.ddoongs.auth.domain.member.LoginMember;
 import com.ddoongs.auth.domain.member.Member;
 import com.ddoongs.auth.domain.member.MemberNotFoundException;
 import com.ddoongs.auth.domain.member.MemberRepository;
 import com.ddoongs.auth.domain.member.MemberService;
 import com.ddoongs.auth.domain.member.Password;
+import com.ddoongs.auth.domain.member.PasswordEncoder;
 import com.ddoongs.auth.domain.member.PasswordMismatchException;
 import com.ddoongs.auth.domain.member.RegisterMember;
 import com.ddoongs.auth.domain.shared.Email;
@@ -54,6 +53,9 @@ class TokenServiceTest {
 
   @Autowired
   private MemberService memberService;
+
+  @Autowired
+  private PasswordEncoder passwordEncoder;
 
   @DisplayName("로그인을 할 수 있다.")
   @Test
@@ -226,5 +228,53 @@ class TokenServiceTest {
     // when & then
     assertThatThrownBy(() -> tokenService.renew(refreshToken.token()))
         .isInstanceOf(MemberNotFoundException.class);
+  }
+
+  @DisplayName("로그아웃을 할 수 있다.")
+  @Test
+  void logout() {
+    Member member = memberRepository.save(new Member(
+        null, new Email("test@example.com"), Password.of("password!", passwordEncoder), null));
+    TokenPair tokenPair =
+        tokenService.login(new LoginMember(member.getEmail().address(), "password!"));
+
+    tokenService.logout(
+        new LogoutMember(tokenPair.accessToken(), tokenPair.refreshToken().token()));
+
+    String accessTokenJti = tokenProvider.extractJti(tokenPair.accessToken());
+    String refreshTokenJti = tokenProvider.extractJti(tokenPair.refreshToken().token());
+
+    assertThat(blacklistTokenRepository.exists(accessTokenJti)).isTrue();
+    assertThat(blacklistTokenRepository.exists(refreshTokenJti)).isTrue();
+  }
+
+  @DisplayName("잘못된 형식의 액세스 토큰으로 로그아웃 시 예외가 발생한다.")
+  @Test
+  void logout_withInvalidAccessToken_throwsInvalidTokenException() {
+    // given
+    Member member = memberRepository.save(new Member(
+        null, new Email("test@example.com"), Password.of("password!", passwordEncoder), null));
+    TokenPair tokenPair =
+        tokenService.login(new LoginMember(member.getEmail().address(), "password!"));
+
+    // when & then
+    assertThatThrownBy(() -> tokenService.logout(
+            new LogoutMember("invalid-token", tokenPair.refreshToken().token())))
+        .isInstanceOf(InvalidTokenException.class);
+  }
+
+  @DisplayName("잘못된 형식의 리프레시 토큰으로 로그아웃 시 예외가 발생한다.")
+  @Test
+  void logout_withInvalidRefreshToken_throwsInvalidTokenException() {
+    // given
+    Member member = memberRepository.save(new Member(
+        null, new Email("test@example.com"), Password.of("password!", passwordEncoder), null));
+    TokenPair tokenPair =
+        tokenService.login(new LoginMember(member.getEmail().address(), "password!"));
+
+    // when & then
+    assertThatThrownBy(
+            () -> tokenService.logout(new LogoutMember(tokenPair.accessToken(), "invalid-token")))
+        .isInstanceOf(InvalidTokenException.class);
   }
 }

@@ -1,7 +1,5 @@
 package com.ddoongs.auth.domain.token;
 
-import com.ddoongs.auth.domain.member.InvalidTokenException;
-import com.ddoongs.auth.domain.member.LoginMember;
 import com.ddoongs.auth.domain.member.Member;
 import com.ddoongs.auth.domain.member.MemberNotFoundException;
 import com.ddoongs.auth.domain.member.MemberRepository;
@@ -78,6 +76,18 @@ public class TokenService {
     blacklistOldToken(jti);
 
     return issueNewTokenPair(member);
+  }
+
+  @Transactional
+  public void logout(LogoutMember logoutMember) {
+    String accessToken = logoutMember.accessToken();
+    String refreshToken = logoutMember.refreshToken();
+
+    blacklistTokenRepository.save(
+        tokenProvider.extractJti(accessToken), tokenProvider.getRemainingAccessTtl(accessToken));
+
+    blacklistTokenRepository.save(
+        tokenProvider.extractJti(refreshToken), tokenProvider.getRemainingAccessTtl(refreshToken));
   }
 
   private TokenPair issueNewTokenPair(Member member) {
