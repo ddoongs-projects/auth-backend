@@ -17,9 +17,12 @@ public class TokenService {
   private final BlacklistTokenRepository blacklistTokenRepository;
   private final TokenProvider tokenProvider;
   private final MemberRepository memberRepository;
+  private final TokenIssuer tokenIssuer;
 
   @Transactional
   public TokenPair reissue(String refreshTokenValue) {
+    tokenProvider.validate(refreshTokenValue);
+
     String jti = tokenProvider.extractJti(refreshTokenValue);
     String email = tokenProvider.extractSubject(refreshTokenValue);
 
@@ -34,9 +37,8 @@ public class TokenService {
   }
 
   private TokenPair issueNewTokenPair(Member member) {
-
-    RefreshToken newRefreshToken = tokenProvider.createRefreshToken(member);
-    String newAccessToken = tokenProvider.createAccessToken(member);
+    RefreshToken newRefreshToken = tokenIssuer.issueRefreshToken(member);
+    String newAccessToken = tokenIssuer.issueAccessToken(member);
 
     refreshTokenRepository.save(newRefreshToken);
 

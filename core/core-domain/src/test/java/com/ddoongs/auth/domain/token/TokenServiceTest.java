@@ -17,9 +17,16 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
+@TestPropertySource(
+    properties = { // ⭐ 이 부분을 추가
+      "jwt.access-token-validity=1h", // 실제 애플리케이션 설정과 유사하게 시간 단위 명시
+      "jwt.refresh-token-validity=14d",
+      "jwt.renew-threshold=2d"
+    })
 @Import(AuthTestConfiguration.class)
 @SpringBootTest(classes = TestApplication.class)
 class TokenServiceTest {
@@ -34,6 +41,9 @@ class TokenServiceTest {
   private BlacklistTokenRepository blacklistTokenRepository;
 
   @Autowired
+  private TokenIssuer tokenIssuer;
+
+  @Autowired
   private TokenProvider tokenProvider;
 
   @Autowired
@@ -45,8 +55,7 @@ class TokenServiceTest {
     // given
     Member member = memberRepository.save(
         new Member(null, new Email("test@example.com"), new Password("password"), null));
-    RefreshToken refreshToken = tokenProvider.createRefreshToken(member);
-    refreshTokenRepository.save(refreshToken);
+    RefreshToken refreshToken = tokenIssuer.issueRefreshToken(member);
 
     // when
     TokenPair tokenPair = tokenService.reissue(refreshToken.token());
@@ -94,8 +103,7 @@ class TokenServiceTest {
     // given
     Member member =
         new Member(999L, new Email("ghost@example.com"), new Password("password"), null);
-    RefreshToken refreshToken = tokenProvider.createRefreshToken(member);
-    refreshTokenRepository.save(refreshToken); // 사용자는 저장하지 않고 토큰만 저장
+    RefreshToken refreshToken = tokenIssuer.issueRefreshToken(member);
 
     // when & then
     assertThatThrownBy(() -> tokenService.reissue(refreshToken.token()))

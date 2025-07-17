@@ -23,16 +23,9 @@ import org.springframework.stereotype.Component;
 public class JwtTokenProvider implements TokenProvider {
 
   private final SecretKey key;
-  private final Duration accessExpires;
-  private final Duration refreshExpires;
 
-  public JwtTokenProvider(
-      @Value("${jwt.secret}") String secret,
-      @Value("${jwt.access-token-validity-in-seconds}") long accessTokenValidity,
-      @Value("${jwt.refresh-token-validity-in-seconds}") long refreshTokenValidity) {
+  public JwtTokenProvider(@Value("${jwt.secret}") String secret) {
     this.key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret));
-    this.accessExpires = Duration.ofSeconds(accessTokenValidity);
-    this.refreshExpires = Duration.ofSeconds(refreshTokenValidity);
   }
 
   private static String extractSubject(Member member) {
@@ -70,7 +63,7 @@ public class JwtTokenProvider implements TokenProvider {
     }
   }
 
-  public String createAccessToken(Member member) {
+  public String createAccessToken(Member member, Duration accessExpires) {
     String subject = extractSubject(member);
 
     Instant now = Instant.now();
@@ -90,7 +83,7 @@ public class JwtTokenProvider implements TokenProvider {
         .compact();
   }
 
-  public RefreshToken createRefreshToken(Member member) {
+  public RefreshToken createRefreshToken(Member member, Duration refreshExpires) {
     String subject = extractSubject(member);
 
     String jti = UUID.randomUUID().toString();

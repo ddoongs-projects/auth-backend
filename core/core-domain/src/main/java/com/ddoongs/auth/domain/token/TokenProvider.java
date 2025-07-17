@@ -13,7 +13,7 @@ public interface TokenProvider {
 
   Duration getRemainingAccessTtl(String token);
 
-  String createAccessToken(Member member);
+  String createAccessToken(Member member, Duration accessExpires);
 
-  RefreshToken createRefreshToken(Member member);
+  RefreshToken createRefreshToken(Member member, Duration refreshExpires);
 }

@@ -13,23 +13,19 @@ import com.ddoongs.auth.domain.token.TokenExpiredException;
 import java.time.Duration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 class JwtTokenProviderTest {
 
   private static final String TEST_SECRET =
       "dGVzdC1zZWNyZXQta2V5LXRlc3Qtc2VjcmV0LWtleS10ZXN0LXNlY3JldC1rZXk="; // "test-secret-key-test-secret-key-test-secret-key" in base64
-  private static final long ACCESS_TOKEN_VALIDITY = 3600; // 1 hour
-  private static final long REFRESH_TOKEN_VALIDITY = 86400; // 1 day
 
   private JwtTokenProvider jwtTokenProvider;
   private Member testMember;
 
   @BeforeEach
   void setUp() {
-    jwtTokenProvider =
-        new JwtTokenProvider(TEST_SECRET, ACCESS_TOKEN_VALIDITY, REFRESH_TOKEN_VALIDITY);
+    jwtTokenProvider = new JwtTokenProvider(TEST_SECRET);
     testMember = MemberFixture.member(new FakePasswordEncoder());
   }
 
@@ -37,7 +33,7 @@ class JwtTokenProviderTest {
   @DisplayName("유효한 토큰은 검증에 성공한다")
   void validate_validToken_shouldNotThrowException() {
     // given
-    String accessToken = jwtTokenProvider.createAccessToken(testMember);
+    String accessToken = jwtTokenProvider.createAccessToken(testMember, Duration.ofDays(1));
 
     // when & then
     assertDoesNotThrow(() -> jwtTokenProvider.validate(accessToken));
@@ -47,8 +43,8 @@ class JwtTokenProviderTest {
   @DisplayName("만료된 토큰은 TokenExpiredException을 발생시킨다")
   void validate_expiredToken_shouldThrowTokenExpiredException() {
     // given
-    JwtTokenProvider expiredTokenProvider = new JwtTokenProvider(TEST_SECRET, 0, 0);
-    String expiredToken = expiredTokenProvider.createAccessToken(testMember);
+    JwtTokenProvider expiredTokenProvider = new JwtTokenProvider(TEST_SECRET);
+    String expiredToken = expiredTokenProvider.createAccessToken(testMember, Duration.ZERO);
 
     // when & then
     assertThatThrownBy(() -> jwtTokenProvider.validate(expiredToken))
@@ -71,10 +67,9 @@ class JwtTokenProviderTest {
   void validate_wrongSignatureToken_shouldThrowInvalidTokenException() {
     // given
     JwtTokenProvider otherProvider = new JwtTokenProvider(
-        "b3RoZXItc2VjcmV0LWtleS1vdGhlci1zZWNyZXQta2V5LW90aGVyLXNlY3JldC1rZXk=",
-        ACCESS_TOKEN_VALIDITY,
-        REFRESH_TOKEN_VALIDITY);
-    String tokenWithWrongSignature = otherProvider.createAccessToken(testMember);
+        "b3RoZXItc2VjcmV0LWtleS1vdGhlci1zZWNyZXQta2V5LW90aGVyLXNlY3JldC1rZXk=");
+    String tokenWithWrongSignature =
+        otherProvider.createAccessToken(testMember, Duration.ofDays(1));
 
     // when & then
     assertThatThrownBy(() -> jwtTokenProvider.validate(tokenWithWrongSignature))
@@ -85,7 +80,7 @@ class JwtTokenProviderTest {
   @DisplayName("토큰에서 Subject(email)를 추출한다")
   void extractSubject_success() {
     // given
-    String accessToken = jwtTokenProvider.createAccessToken(testMember);
+    String accessToken = jwtTokenProvider.createAccessToken(testMember, Duration.ofDays(1));
 
     // when
     String subject = jwtTokenProvider.extractSubject(accessToken);
@@ -98,7 +93,7 @@ class JwtTokenProviderTest {
   @DisplayName("Refresh Token에서 JTI를 추출한다")
   void extractJti_success() {
     // given
-    RefreshToken refreshToken = jwtTokenProvider.createRefreshToken(testMember);
+    RefreshToken refreshToken = jwtTokenProvider.createRefreshToken(testMember, Duration.ofDays(1));
 
     // when
     String jti = jwtTokenProvider.extractJti(refreshToken.token());
@@ -111,55 +106,44 @@ class JwtTokenProviderTest {
   @DisplayName("Access Token의 남은 유효시간(TTL)을 계산한다")
   void getRemainingAccessTtl_success() throws InterruptedException {
     // given
-    JwtTokenProvider shortLivedTokenProvider =
-        new JwtTokenProvider(TEST_SECRET, 2, REFRESH_TOKEN_VALIDITY);
-    String accessToken = shortLivedTokenProvider.createAccessToken(testMember);
+    JwtTokenProvider shortLivedTokenProvider = new JwtTokenProvider(TEST_SECRET);
+    String accessToken =
+        shortLivedTokenProvider.createAccessToken(testMember, Duration.ofSeconds(1));
 
     // when
-    Thread.sleep(1000); // 1초 대기
     Duration remainingTtl = shortLivedTokenProvider.getRemainingAccessTtl(accessToken);
 
     // then
     assertThat(remainingTtl.getSeconds()).isLessThanOrEqualTo(1);
   }
 
-  @Nested
-  @DisplayName("Access Token 생성")
-  class CreateAccessToken {
+  @Test
+  @DisplayName("멤버 정보를 기반으로 Access Token을 생성한다")
+  void createAccessToken_success() {
+    // when
+    String accessToken = jwtTokenProvider.createAccessToken(testMember, Duration.ofDays(1));
 
-    @Test
-    @DisplayName("멤버 정보를 기반으로 Access Token을 생성한다")
-    void createAccessToken_success() {
-      // when
-      String accessToken = jwtTokenProvider.createAccessToken(testMember);
-
-      // then
-      assertThat(accessToken).isNotNull();
-      String subject = jwtTokenProvider.extractSubject(accessToken);
-      assertThat(subject).isEqualTo(testMember.getEmail().address());
-    }
+    // then
+    assertThat(accessToken).isNotNull();
+    String subject = jwtTokenProvider.extractSubject(accessToken);
+    assertThat(subject).isEqualTo(testMember.getEmail().address());
   }
 
-  @Nested
-  @DisplayName("Refresh Token 생성")
-  class CreateRefreshToken {
+  @Test
+  @DisplayName("멤버 정보를 기반으로 Refresh Token을 생성한다")
+  void createRefreshToken_success() {
+    // when
+    RefreshToken refreshToken = jwtTokenProvider.createRefreshToken(testMember, Duration.ofDays(1));
 
-    @Test
-    @DisplayName("멤버 정보를 기반으로 Refresh Token을 생성한다")
-    void createRefreshToken_success() {
-      // when
-      RefreshToken refreshToken = jwtTokenProvider.createRefreshToken(testMember);
+    // then
+    assertThat(refreshToken).isNotNull();
+    assertThat(refreshToken.jti()).isNotNull();
+    assertThat(refreshToken.token()).isNotNull();
+    assertThat(refreshToken.subject()).isEqualTo(testMember.getEmail().address());
 
-      // then
-      assertThat(refreshToken).isNotNull();
-      assertThat(refreshToken.jti()).isNotNull();
-      assertThat(refreshToken.token()).isNotNull();
-      assertThat(refreshToken.subject()).isEqualTo(testMember.getEmail().address());
-
-      String subject = jwtTokenProvider.extractSubject(refreshToken.token());
-      assertThat(subject).isEqualTo(testMember.getEmail().address());
-      String jti = jwtTokenProvider.extractJti(refreshToken.token());
-      assertThat(jti).isEqualTo(refreshToken.jti());
-    }
+    String subject = jwtTokenProvider.extractSubject(refreshToken.token());
+    assertThat(subject).isEqualTo(testMember.getEmail().address());
+    String jti = jwtTokenProvider.extractJti(refreshToken.token());
+    assertThat(jti).isEqualTo(refreshToken.jti());
   }
 }
