@@ -50,7 +50,7 @@ public class JwtTokenProvider implements TokenProvider {
   }
 
   @Override
-  public String getSubject(String token) {
+  public String extractSubject(String token) {
     return getClaims(token).getSubject();
   }
 
@@ -71,12 +71,18 @@ public class JwtTokenProvider implements TokenProvider {
   }
 
   public String createAccessToken(Member member) {
-    String email = extractSubject(member);
+    String subject = extractSubject(member);
 
     Instant now = Instant.now();
     Instant exp = now.plus(accessExpires);
 
+    String jti = UUID.randomUUID().toString();
+    return createToken(jti, subject, now, exp);
+  }
+
+  private String createToken(String jti, String email, Instant now, Instant exp) {
     return Jwts.builder()
+        .id(jti)
         .subject(email)
         .issuedAt(Date.from(now))
         .expiration(Date.from(exp))
@@ -91,13 +97,7 @@ public class JwtTokenProvider implements TokenProvider {
     Instant now = Instant.now();
     Instant exp = now.plus(refreshExpires);
 
-    String token = Jwts.builder()
-        .id(jti)
-        .subject(subject)
-        .issuedAt(Date.from(now))
-        .expiration(Date.from(exp))
-        .signWith(key)
-        .compact();
+    String token = createToken(jti, subject, now, exp);
 
     return new RefreshToken(jti, subject, exp, token);
   }

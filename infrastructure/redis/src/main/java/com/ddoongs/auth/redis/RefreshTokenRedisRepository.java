@@ -11,20 +11,20 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class RefreshTokenRedisRepository implements RefreshTokenRepository {
 
-  private static final String REFRESH_KEY_PREFIX = "refresh:";
+  private static final String REFRESH_TOKEN_KEY_PREFIX = "refreshToken:";
 
   private final RedisTemplate<String, RefreshToken> redisTemplate;
 
   @Override
   public RefreshToken save(RefreshToken token) {
-    String key = REFRESH_KEY_PREFIX + token.jti();
+    String key = REFRESH_TOKEN_KEY_PREFIX + token.jti();
     redisTemplate.opsForValue().set(key, token, token.remainingTtl());
     return token;
   }
 
   @Override
   public Optional<RefreshToken> find(String jti) {
-    String key = REFRESH_KEY_PREFIX + jti;
+    String key = REFRESH_TOKEN_KEY_PREFIX + jti;
     RefreshToken token = redisTemplate.opsForValue().get(key);
     return Optional.ofNullable(token);
   }

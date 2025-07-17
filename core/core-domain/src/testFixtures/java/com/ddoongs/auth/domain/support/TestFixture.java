@@ -1,6 +1,7 @@
 package com.ddoongs.auth.domain.support;
 
 import com.ddoongs.auth.domain.member.PasswordEncoder;
+import com.ddoongs.auth.domain.token.BlacklistTokenRepository;
 import com.ddoongs.auth.domain.token.RefreshTokenRepository;
 import com.ddoongs.auth.domain.verification.VerificationCodeGenerator;
 
@@ -25,5 +26,9 @@ public class TestFixture {
 
   public static RefreshTokenRepository refreshTokenRepository() {
     return new FakeRefreshTokenRepository();
+  }
+
+  public static BlacklistTokenRepository blacklistTokenRepository() {
+    return new FakeBlacklistTokenRepository();
   }
 }

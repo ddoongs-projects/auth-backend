@@ -9,7 +9,7 @@ public interface TokenProvider {
 
   String extractJti(String token);
 
-  String getSubject(String token);
+  String extractSubject(String token);
 
   Duration getRemainingAccessTtl(String token);
 

@@ -2,6 +2,7 @@ package com.ddoongs.auth.domain;
 
 import com.ddoongs.auth.domain.member.PasswordEncoder;
 import com.ddoongs.auth.domain.support.TestFixture;
+import com.ddoongs.auth.domain.token.BlacklistTokenRepository;
 import com.ddoongs.auth.domain.token.RefreshTokenRepository;
 import com.ddoongs.auth.domain.verification.VerificationCodeGenerator;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -23,5 +24,10 @@ public class AuthTestConfiguration {
   @Bean
   public RefreshTokenRepository refreshTokenRepository() {
     return TestFixture.refreshTokenRepository();
+  }
+
+  @Bean
+  public BlacklistTokenRepository blacklistTokenRepository() {
+    return TestFixture.blacklistTokenRepository();
   }
 }
