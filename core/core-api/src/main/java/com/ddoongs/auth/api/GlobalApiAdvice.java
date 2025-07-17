@@ -4,6 +4,7 @@ import com.ddoongs.auth.domain.shared.BusinessException;
 import com.ddoongs.auth.domain.shared.ConflictException;
 import com.ddoongs.auth.domain.shared.CoreErrorCode;
 import com.ddoongs.auth.domain.shared.NotFoundException;
+import com.ddoongs.auth.domain.shared.UnauthorizedException;
 import com.ddoongs.auth.domain.shared.ValidationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.ConversionNotSupportedException;
@@ -120,6 +121,15 @@ public class GlobalApiAdvice {
   public ResponseEntity<ErrorResponse> handleValidationException(BusinessException ex) {
     logException(ex);
     return buildResponse(ex, HttpStatus.BAD_REQUEST);
+  }
+
+  /**
+   * 인증 실패 (401)
+   */
+  @ExceptionHandler(UnauthorizedException.class)
+  public ResponseEntity<ErrorResponse> handleUnauthorizedException(BusinessException ex) {
+    logException(ex);
+    return buildResponse(ex, HttpStatus.UNAUTHORIZED);
   }
 
   private ResponseEntity<ErrorResponse> buildResponse(BusinessException ex, HttpStatus status) {
