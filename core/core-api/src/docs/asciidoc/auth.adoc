@@ -15,3 +15,8 @@ operation::auth-reissue[]
 === 토큰 renew
 
 operation::auth-renew[]
+
+[[auth-logout]]
+=== 로그아웃
+
+operation::auth-logout[]

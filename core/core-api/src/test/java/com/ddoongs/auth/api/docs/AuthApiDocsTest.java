@@ -10,6 +10,7 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.response
 
 import com.ddoongs.auth.api.auth.AuthApi;
 import com.ddoongs.auth.api.auth.MemberLoginRequest;
+import com.ddoongs.auth.api.auth.MemberLogoutRequest;
 import com.ddoongs.auth.api.auth.ReissueRequest;
 import com.ddoongs.auth.api.auth.RenewRequest;
 import com.ddoongs.auth.domain.token.RefreshToken;
@@ -127,5 +128,23 @@ class AuthApiDocsTest {
             responseFields(
                 fieldWithPath("accessToken").description("JWT access token"),
                 fieldWithPath("refreshToken").description("new JWT refresh token"))));
+  }
+
+  @DisplayName("로그아웃 API 문서 생성")
+  @Test
+  void logout() throws Exception {
+    final var request = new MemberLogoutRequest("sample.access.token", "sample.refresh.token");
+
+    assertThat(mvc.post()
+            .uri("/auth/logout")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request))
+            .exchange())
+        .hasStatusOk()
+        .apply(document(
+            "auth-logout",
+            requestFields(
+                fieldWithPath("accessToken").description("JWT access token"),
+                fieldWithPath("refreshToken").description("JWT refresh token"))));
   }
 }

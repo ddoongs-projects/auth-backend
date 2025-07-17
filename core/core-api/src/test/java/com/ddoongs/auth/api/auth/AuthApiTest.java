@@ -5,15 +5,17 @@ import static com.ddoongs.auth.domain.util.AssertThatUtils.notNull;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.ddoongs.auth.domain.AuthTestConfiguration;
-import com.ddoongs.auth.domain.member.LoginMember;
 import com.ddoongs.auth.domain.member.MemberService;
 import com.ddoongs.auth.domain.member.RegisterMember;
 import com.ddoongs.auth.domain.shared.CoreErrorCode;
 import com.ddoongs.auth.domain.shared.Email;
 import com.ddoongs.auth.domain.support.FakeClock;
 import com.ddoongs.auth.domain.support.FakeVerificationCodeGenerator;
+import com.ddoongs.auth.domain.token.BlacklistTokenRepository;
+import com.ddoongs.auth.domain.token.LoginMember;
 import com.ddoongs.auth.domain.token.RefreshToken;
 import com.ddoongs.auth.domain.token.RefreshTokenRepository;
+import com.ddoongs.auth.domain.token.TokenPair;
 import com.ddoongs.auth.domain.token.TokenProvider;
 import com.ddoongs.auth.domain.token.TokenService;
 import com.ddoongs.auth.domain.verification.CreateVerification;
@@ -29,6 +31,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
@@ -69,6 +72,9 @@ class AuthApiTest {
 
   @Autowired
   private FakeClock fakeClock;
+
+  @Qualifier("blacklistTokenRepository") @Autowired
+  private BlacklistTokenRepository blacklistTokenRepository;
 
   @BeforeEach
   void setup() {
@@ -290,5 +296,32 @@ class AuthApiTest {
         .hasStatus(HttpStatus.UNAUTHORIZED)
         .bodyJson()
         .hasPathSatisfying("$.code", equalsTo(CoreErrorCode.INVALID_TOKEN.toString()));
+  }
+
+  @DisplayName("로그아웃을 진행한다.")
+  @Test
+  void logout() throws JsonProcessingException {
+    String email = "test@email.com";
+    String password = "123qwe!@#";
+
+    registerMember(email, password);
+
+    TokenPair tokenPair = tokenService.login(new LoginMember(email, password));
+
+    final var request = new MemberLogoutRequest(
+        tokenPair.accessToken(), tokenPair.refreshToken().token());
+
+    final var result = mvc.post()
+        .uri("/auth/logout")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(request))
+        .exchange();
+
+    assertThat(result).hasStatusOk();
+
+    String accessJti = tokenProvider.extractJti(tokenPair.accessToken());
+    String refreshJti = tokenPair.refreshToken().jti();
+    assertThat(blacklistTokenRepository.exists(accessJti)).isTrue();
+    assertThat(blacklistTokenRepository.exists(refreshJti)).isTrue();
   }
 }

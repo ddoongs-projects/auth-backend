@@ -1,7 +1,7 @@
 package com.ddoongs.auth.jwt;
 
-import com.ddoongs.auth.domain.member.InvalidTokenException;
 import com.ddoongs.auth.domain.member.Member;
+import com.ddoongs.auth.domain.token.InvalidTokenException;
 import com.ddoongs.auth.domain.token.RefreshToken;
 import com.ddoongs.auth.domain.token.TokenExpiredException;
 import com.ddoongs.auth.domain.token.TokenProvider;

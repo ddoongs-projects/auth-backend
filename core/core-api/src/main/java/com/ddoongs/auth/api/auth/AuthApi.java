@@ -31,4 +31,9 @@ public class AuthApi {
     TokenPair tokenPair = tokenService.renew(request.refreshToken());
     return TokenResponse.of(tokenPair);
   }
+
+  @PostMapping("/auth/logout")
+  public void logout(@RequestBody @Valid MemberLogoutRequest request) {
+    tokenService.logout(request.toLogoutMember());
+  }
 }
