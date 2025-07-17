@@ -8,8 +8,10 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWit
 import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 
+import com.ddoongs.auth.api.auth.AuthApi;
 import com.ddoongs.auth.api.auth.MemberLoginRequest;
-import com.ddoongs.auth.api.member.MemberApi;
+import com.ddoongs.auth.api.auth.ReissueRequest;
+import com.ddoongs.auth.api.auth.RenewRequest;
 import com.ddoongs.auth.domain.token.RefreshToken;
 import com.ddoongs.auth.domain.token.TokenPair;
 import com.ddoongs.auth.domain.token.TokenService;
@@ -24,10 +26,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 
 @AutoConfigureRestDocs
-@WebMvcTest(MemberApi.class)
+@WebMvcTest(AuthApi.class)
 @Tag("restdocs")
 class AuthApiDocsTest {
 
@@ -37,7 +40,7 @@ class AuthApiDocsTest {
   @Autowired
   private ObjectMapper objectMapper;
 
-  @Autowired
+  @MockitoBean
   private TokenService tokenService;
 
   @DisplayName("로그인 API 문서 생성")
@@ -61,12 +64,68 @@ class AuthApiDocsTest {
             .exchange())
         .hasStatusOk()
         .apply(document(
-            "member-login",
+            "auth-login",
             requestFields(
                 fieldWithPath("email").description("이메일"),
                 fieldWithPath("password").description("비밀번호")),
             responseFields(
                 fieldWithPath("accessToken").description("JWT access token"),
                 fieldWithPath("refreshToken").description("JWT refresh token"))));
+  }
+
+  @DisplayName("토큰 재발급 API 문서 생성")
+  @Test
+  void reissue() throws Exception {
+    final var request = new ReissueRequest("sample.refresh.token");
+
+    given(tokenService.reissue(any()))
+        .willReturn(new TokenPair(
+            "sample.new.access.token",
+            new RefreshToken(
+                UUID.randomUUID().toString(),
+                "test@email.com",
+                Instant.now().plus(Duration.ofDays(7)),
+                "sample.refresh.token")));
+
+    assertThat(mvc.post()
+            .uri("/auth/reissue")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request))
+            .exchange())
+        .hasStatusOk()
+        .apply(document(
+            "auth-reissue",
+            requestFields(fieldWithPath("refreshToken").description("JWT refresh token")),
+            responseFields(
+                fieldWithPath("accessToken").description("new JWT access token"),
+                fieldWithPath("refreshToken").description("JWT refresh token"))));
+  }
+
+  @DisplayName("토큰 갱신 API 문서 생성")
+  @Test
+  void renew() throws Exception {
+    final var request = new RenewRequest("sample.refresh.token");
+
+    given(tokenService.renew(any()))
+        .willReturn(new TokenPair(
+            "sample.access.token",
+            new RefreshToken(
+                UUID.randomUUID().toString(),
+                "test@email.com",
+                Instant.now().plus(Duration.ofDays(7)),
+                "sample.new.refresh.token")));
+
+    assertThat(mvc.post()
+            .uri("/auth/renew")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request))
+            .exchange())
+        .hasStatusOk()
+        .apply(document(
+            "auth-renew",
+            requestFields(fieldWithPath("refreshToken").description("JWT refresh token")),
+            responseFields(
+                fieldWithPath("accessToken").description("JWT access token"),
+                fieldWithPath("refreshToken").description("new JWT refresh token"))));
   }
 }

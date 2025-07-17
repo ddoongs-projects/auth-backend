@@ -88,4 +88,5 @@ a|
 :snippets: +{project-root}+/build/generated-snippets/core-api
 include::modules/core-api/verification.adoc[]
 include::modules/core-api/member.adoc[]
+include::modules/core-api/auth.adoc[]
 
