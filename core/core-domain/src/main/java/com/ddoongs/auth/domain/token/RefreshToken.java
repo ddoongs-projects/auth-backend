@@ -27,8 +27,4 @@ public record RefreshToken(String jti, String subject, Instant expiresAt, String
   public int hashCode() {
     return Objects.hash(jti);
   }
-
-  public boolean canBeRenewed(Duration renewThreshold, Clock clock) {
-    return this.remainingTtl(clock).minus(renewThreshold).isNegative();
-  }
 }

@@ -19,7 +19,6 @@ public class TokenService {
   private final BlacklistTokenRepository blacklistTokenRepository;
   private final TokenProvider tokenProvider;
   private final MemberRepository memberRepository;
-  private final TokenValidator tokenValidator;
   private final TokenIssuer tokenIssuer;
   private final Clock clock;
 
@@ -52,28 +51,6 @@ public class TokenService {
 
     Member member =
         memberRepository.findByEmail(new Email(email)).orElseThrow(MemberNotFoundException::new);
-
-    return issueNewTokenPair(member);
-  }
-
-  @Transactional
-  public TokenPair renew(String refreshTokenValue) {
-    tokenProvider.validate(refreshTokenValue);
-
-    String jti = tokenProvider.extractJti(refreshTokenValue);
-    String email = tokenProvider.extractSubject(refreshTokenValue);
-
-    validateNotBlacklisted(jti);
-
-    RefreshToken refreshToken =
-        refreshTokenRepository.find(jti).orElseThrow(InvalidTokenException::new);
-
-    Member member =
-        memberRepository.findByEmail(new Email(email)).orElseThrow(MemberNotFoundException::new);
-
-    tokenValidator.validateRenewable(refreshToken);
-
-    blacklistOldToken(jti);
 
     return issueNewTokenPair(member);
   }

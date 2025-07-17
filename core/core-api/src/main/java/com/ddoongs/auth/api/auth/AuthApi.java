@@ -26,12 +26,6 @@ public class AuthApi {
     return TokenResponse.of(tokenPair);
   }
 
-  @PostMapping("/auth/renew")
-  public TokenResponse renew(@RequestBody @Valid RenewRequest request) {
-    TokenPair tokenPair = tokenService.renew(request.refreshToken());
-    return TokenResponse.of(tokenPair);
-  }
-
   @PostMapping("/auth/logout")
   public void logout(@RequestBody @Valid MemberLogoutRequest request) {
     tokenService.logout(request.toLogoutMember());

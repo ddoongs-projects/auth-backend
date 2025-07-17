@@ -12,7 +12,6 @@ import com.ddoongs.auth.api.auth.AuthApi;
 import com.ddoongs.auth.api.auth.MemberLoginRequest;
 import com.ddoongs.auth.api.auth.MemberLogoutRequest;
 import com.ddoongs.auth.api.auth.ReissueRequest;
-import com.ddoongs.auth.api.auth.RenewRequest;
 import com.ddoongs.auth.domain.token.RefreshToken;
 import com.ddoongs.auth.domain.token.TokenPair;
 import com.ddoongs.auth.domain.token.TokenService;
@@ -100,34 +99,6 @@ class AuthApiDocsTest {
             responseFields(
                 fieldWithPath("accessToken").description("new JWT access token"),
                 fieldWithPath("refreshToken").description("JWT refresh token"))));
-  }
-
-  @DisplayName("토큰 갱신 API 문서 생성")
-  @Test
-  void renew() throws Exception {
-    final var request = new RenewRequest("sample.refresh.token");
-
-    given(tokenService.renew(any()))
-        .willReturn(new TokenPair(
-            "sample.access.token",
-            new RefreshToken(
-                UUID.randomUUID().toString(),
-                "test@email.com",
-                Instant.now().plus(Duration.ofDays(7)),
-                "sample.new.refresh.token")));
-
-    assertThat(mvc.post()
-            .uri("/auth/renew")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request))
-            .exchange())
-        .hasStatusOk()
-        .apply(document(
-            "auth-renew",
-            requestFields(fieldWithPath("refreshToken").description("JWT refresh token")),
-            responseFields(
-                fieldWithPath("accessToken").description("JWT access token"),
-                fieldWithPath("refreshToken").description("new JWT refresh token"))));
   }
 
   @DisplayName("로그아웃 API 문서 생성")
