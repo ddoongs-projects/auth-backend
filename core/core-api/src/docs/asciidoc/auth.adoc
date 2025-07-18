@@ -4,19 +4,20 @@
 [[auth-login]]
 === 로그인
 
-operation::auth-login[]
+:module-name: core-api
+:op-name: auth-login
+include::snippets/docs.adoc[]
 
 [[auth-reissue]]
 === 토큰 reissue
 
-operation::auth-reissue[]
-
-[[auth-renew]]
-=== 토큰 renew
-
-operation::auth-renew[]
+:module-name: core-api
+:op-name: auth-reissue
+include::snippets/docs.adoc[]
 
 [[auth-logout]]
 === 로그아웃
 
-operation::auth-logout[]
+:module-name: core-api
+:op-name: auth-logout
+include::snippets/docs.adoc[]

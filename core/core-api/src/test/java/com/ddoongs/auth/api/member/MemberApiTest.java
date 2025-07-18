@@ -119,7 +119,7 @@ class MemberApiTest {
 
   @DisplayName("중복된 이메일로 회원 등록을 할 수 없다.")
   @Test
-  void registerFailDupliatedEmail() throws Exception {
+  void registerFailDuplicatedEmail() throws Exception {
     String email = "test@email.com";
     String password = "123qwe!@#";
 

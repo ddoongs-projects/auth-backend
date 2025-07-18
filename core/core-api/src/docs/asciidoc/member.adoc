@@ -4,4 +4,12 @@
 [[member-register]]
 === 회원가입
 
-operation::member-register[]
+:module-name: core-api
+:op-name: member-register
+include::snippets/docs.adoc[]
+
+[[member-password-reset]]
+=== 비밀번호 초기화
+
+:op-name: member-password-reset
+include::snippets/docs.adoc[]

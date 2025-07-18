@@ -1,0 +1,13 @@
+include::{snippets}/{module-name}/{op-name}/http-request.adoc[opts=optional]
+
+include::{snippets}/{module-name}/{op-name}/request-body.adoc[opts=optional]
+
+include::{snippets}/{module-name}/{op-name}/request-fields.adoc[opts=optional]
+
+include::{snippets}/{module-name}/{op-name}/response-body.adoc[opts=optional]
+
+include::{snippets}/{module-name}/{op-name}/response-fields.adoc[opts=optional]
+
+include::{snippets}/{module-name}/{op-name}/http-response.adoc[opts=optional]
+
+include::{snippets}/{module-name}/{op-name}/error-codes.adoc[opts=optional]

@@ -186,7 +186,7 @@ class AuthApiTest {
         .hasPathSatisfying("$.refreshToken", notNull());
   }
 
-  @DisplayName("잘못된 리프레시 토큰으로는 reissue에 실패한다.")
+  @DisplayName("만료된 리프레시 토큰으로는 reissue에 실패한다.")
   @Test
   void reissueFail() throws Exception {
     String email = "test@email.com";
@@ -212,7 +212,7 @@ class AuthApiTest {
         .hasPathSatisfying("$.code", equalsTo(CoreErrorCode.EXPIRED_TOKEN.toString()));
   }
 
-  @DisplayName("만료된 리프레시 토큰으로는 reissue에 실패한다.")
+  @DisplayName("잘못된 리프레시 토큰으로는 reissue에 실패한다.")
   @Test
   void reissueFailWithExpiredToken() throws Exception {
     final var request = new ReissueRequest("invalid-token");
@@ -254,5 +254,22 @@ class AuthApiTest {
     String refreshJti = tokenPair.refreshToken().jti();
     assertThat(blacklistTokenRepository.exists(accessJti)).isTrue();
     assertThat(blacklistTokenRepository.exists(refreshJti)).isTrue();
+  }
+
+  @DisplayName("토큰이 올바르지 않으면 로그아웃에 실패한다.")
+  @Test
+  void logoutFail() throws JsonProcessingException {
+    final var request = new MemberLogoutRequest("invalid-access-token", "invalid-refresh-token");
+
+    final var result = mvc.post()
+        .uri("/auth/logout")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(request))
+        .exchange();
+
+    assertThat(result)
+        .hasStatus(HttpStatus.UNAUTHORIZED)
+        .bodyJson()
+        .hasPathSatisfying("$.code", equalsTo(CoreErrorCode.INVALID_TOKEN.toString()));
   }
 }
