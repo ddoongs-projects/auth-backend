@@ -91,7 +91,7 @@ public class GlobalApiAdvice {
   })
   public ResponseEntity<ErrorResponse> handleServerError(Exception ex) {
     log.error("Server error: ", ex);
-    ApiErrorCode errorCode = ApiErrorCode.COMMON_ERROR;
+    ApiErrorCode errorCode = ApiErrorCode.INTERNAL_SERVER_ERROR;
     ErrorResponse response = new ErrorResponse(errorCode.toString(), errorCode.getDefaultMessage());
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
   }
