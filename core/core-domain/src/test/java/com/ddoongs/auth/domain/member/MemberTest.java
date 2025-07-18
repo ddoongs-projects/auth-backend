@@ -69,4 +69,19 @@ class MemberTest {
     assertThatThrownBy(() -> member.validatePassword("456rty$%^", passwordEncoder))
         .isInstanceOf(PasswordMismatchException.class);
   }
+
+  @Test
+  void changePassword() {
+    String oldPassword = "123qwe!@#";
+    Member member =
+        Member.register(new RegisterMember("test@test.com", oldPassword), passwordEncoder);
+
+    String newPassword = "456rty$%^";
+    member.changePassword(newPassword, passwordEncoder);
+
+    assertThatThrownBy(() -> member.validatePassword(oldPassword, passwordEncoder))
+        .isInstanceOf(PasswordMismatchException.class);
+    assertThatCode(() -> member.validatePassword(newPassword, passwordEncoder))
+        .doesNotThrowAnyException();
+  }
 }

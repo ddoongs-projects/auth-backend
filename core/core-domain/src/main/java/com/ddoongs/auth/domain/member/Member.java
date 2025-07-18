@@ -32,4 +32,8 @@ public class Member {
       throw new PasswordMismatchException();
     }
   }
+
+  public void changePassword(String password, PasswordEncoder passwordEncoder) {
+    this.password = Password.of(password, passwordEncoder);
+  }
 }
