@@ -10,6 +10,7 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.response
 
 import com.ddoongs.auth.api.member.MemberApi;
 import com.ddoongs.auth.api.member.MemberRegisterRequest;
+import com.ddoongs.auth.api.member.ResetPasswordRequest;
 import com.ddoongs.auth.domain.member.Member;
 import com.ddoongs.auth.domain.member.MemberService;
 import com.ddoongs.auth.domain.member.PasswordEncoder;
@@ -72,5 +73,27 @@ class MemberApiDocsTest {
             responseFields(
                 fieldWithPath("memberId").description("회원 식별자"),
                 fieldWithPath("email").description("회원 이메일"))));
+  }
+
+  @DisplayName("비밀번호 초기화 API 문서 생성")
+  @Test
+  void resetPassword() throws Exception {
+    final var request = new ResetPasswordRequest("test@email.com", "123asd!@#", UUID.randomUUID());
+    final Member member = MemberFixture.member(passwordEncoder);
+
+    given(memberService.resetPassword(any(), any(), any())).willReturn(member);
+
+    assertThat(mvc.post()
+            .uri("/members/reset-password")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request))
+            .exchange())
+        .hasStatusOk()
+        .apply(document(
+            "member-register",
+            requestFields(
+                fieldWithPath("email").description("이메일"),
+                fieldWithPath("password").description("비밀번호"),
+                fieldWithPath("verificationId").description("인증이 완료된 인증 식별자"))));
   }
 }

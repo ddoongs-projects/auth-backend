@@ -19,4 +19,9 @@ public class MemberApi {
     Member member = memberService.register(request.toRegisterMember(), request.verificationId());
     return MemberRegisterResponse.of(member);
   }
+
+  @PostMapping("/members/reset-password")
+  public void resetPassword(@RequestBody @Valid ResetPasswordRequest request) {
+    memberService.resetPassword(request.toEmail(), request.password(), request.verificationId());
+  }
 }

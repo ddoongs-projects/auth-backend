@@ -56,4 +56,8 @@ public class VerificationJpo extends MetaEntity {
         this.status,
         new DefaultDateTime(this.getCreatedAt(), this.getUpdatedAt()));
   }
+
+  public void updateFromDomain(Verification verification) {
+    this.status = verification.getStatus();
+  }
 }

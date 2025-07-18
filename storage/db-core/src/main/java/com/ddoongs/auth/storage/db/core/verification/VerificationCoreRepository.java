@@ -18,8 +18,14 @@ public class VerificationCoreRepository implements VerificationRepository {
   @Override
   public Verification save(final Verification verification) {
     return verificationJpoRepository
-        .save(VerificationJpo.fromDomain(verification))
-        .toDomain();
+        .findById(verification.getId())
+        .map(jpo -> {
+          jpo.updateFromDomain(verification);
+          return verificationJpoRepository.save(jpo).toDomain();
+        })
+        .orElseGet(() -> verificationJpoRepository
+            .save(VerificationJpo.fromDomain(verification))
+            .toDomain());
   }
 
   @Override
