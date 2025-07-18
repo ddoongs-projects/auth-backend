@@ -36,4 +36,17 @@ public class MemberService {
 
     return memberRepository.save(member);
   }
+
+  @Transactional
+  public Member resetPassword(Email email, String password, UUID verificationId) {
+    Member member = memberRepository.findByEmail(email).orElseThrow(MemberNotFoundException::new);
+
+    Verification verification = verificationFinder.find(verificationId);
+
+    verification.ensureValidFor(email, VerificationPurpose.RESET_PASSWORD);
+
+    member.changePassword(password, passwordEncoder);
+
+    return memberRepository.save(member);
+  }
 }

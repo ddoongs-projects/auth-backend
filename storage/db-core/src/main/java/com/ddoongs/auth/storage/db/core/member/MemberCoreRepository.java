@@ -15,7 +15,13 @@ public class MemberCoreRepository implements MemberRepository {
 
   @Override
   public Member save(Member member) {
-    return memberJpaRepository.save(MemberJpo.fromDomain(member)).toDomain();
+    return Optional.ofNullable(member.getId())
+        .flatMap(memberJpaRepository::findById)
+        .map(jpo -> {
+          jpo.updateFromDomain(member);
+          return jpo.toDomain();
+        })
+        .orElseGet(() -> memberJpaRepository.save(MemberJpo.fromDomain(member)).toDomain());
   }
 
   @Override

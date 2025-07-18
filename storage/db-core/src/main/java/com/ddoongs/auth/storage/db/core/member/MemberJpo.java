@@ -36,4 +36,8 @@ public class MemberJpo extends BaseEntity {
         new Password(this.getPassword()),
         new DefaultDateTime(this.getCreatedAt(), this.getUpdatedAt()));
   }
+
+  public void updateFromDomain(Member member) {
+    this.password = member.getPassword().getPasswordHash();
+  }
 }
