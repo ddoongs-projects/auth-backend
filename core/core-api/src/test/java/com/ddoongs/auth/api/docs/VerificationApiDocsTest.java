@@ -1,10 +1,11 @@
 package com.ddoongs.auth.api.docs;
 
+import static com.ddoongs.auth.domain.shared.CoreErrorCode.ALREADY_CONSUMED_VERIFICATION;
 import static com.ddoongs.auth.domain.shared.CoreErrorCode.INVALID_VERIFICATION_CODE;
 import static com.ddoongs.auth.domain.shared.CoreErrorCode.VERIFICATION_ALREADY_COMPLETED;
 import static com.ddoongs.auth.domain.shared.CoreErrorCode.VERIFICATION_COOLDOWN;
 import static com.ddoongs.auth.domain.shared.CoreErrorCode.VERIFICATION_NOT_FOUND;
-import static com.ddoongs.auth.restdocs.RestdocsUtils.errorCodes;
+import static com.ddoongs.auth.restdocs.RestdocsUtils.errorCodesWithCause;
 import static com.ddoongs.auth.restdocs.RestdocsUtils.errorWithCause;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
@@ -74,7 +75,7 @@ class VerificationApiDocsTest extends RestdocsTest {
                 fieldWithPath("purpose")
                     .description("인증 목적 (REGISTER: 회원가입, RESET_PASSWORD: 비밀번호 초기화)")),
             responseFields(fieldWithPath("verificationId").description("인증 식별자")),
-            errorCodes(errorWithCause(VERIFICATION_COOLDOWN, "인증 쿨다운 시간 이내에 시도하면 발생"))));
+            errorCodesWithCause(errorWithCause(VERIFICATION_COOLDOWN, "인증 쿨다운 시간 이내에 시도하면 발생"))));
   }
 
   @DisplayName("인증번호 인증 API 문서 생성")
@@ -96,9 +97,10 @@ class VerificationApiDocsTest extends RestdocsTest {
             requestFields(
                 fieldWithPath("verificationId").description("인증코드 식별자"),
                 fieldWithPath("code").description("인증 코드")),
-            errorCodes(
+            errorCodesWithCause(
                 errorWithCause(INVALID_VERIFICATION_CODE, "인증 코드가 다르면 발생"),
                 errorWithCause(VERIFICATION_NOT_FOUND, "인증 코드가 존재하지 않으면 발생"),
+                errorWithCause(ALREADY_CONSUMED_VERIFICATION, "해당 인증이 이미 사용되었을 때 발생"),
                 errorWithCause(VERIFICATION_ALREADY_COMPLETED, "인증 코드가 이미 인증 완료 되었으면 발생"))));
   }
 }

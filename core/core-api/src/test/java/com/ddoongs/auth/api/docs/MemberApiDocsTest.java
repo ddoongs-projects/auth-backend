@@ -4,7 +4,7 @@ import static com.ddoongs.auth.domain.shared.CoreErrorCode.DUPLICATED_EMAIL;
 import static com.ddoongs.auth.domain.shared.CoreErrorCode.MEMBER_NOT_FOUND;
 import static com.ddoongs.auth.domain.shared.CoreErrorCode.VERIFICATION_MISMATCH;
 import static com.ddoongs.auth.domain.shared.CoreErrorCode.VERIFICATION_NOT_COMPLETED;
-import static com.ddoongs.auth.restdocs.RestdocsUtils.errorCodes;
+import static com.ddoongs.auth.restdocs.RestdocsUtils.errorCodesWithCause;
 import static com.ddoongs.auth.restdocs.RestdocsUtils.errorWithCause;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -76,7 +76,7 @@ class MemberApiDocsTest extends RestdocsTest {
             responseFields(
                 fieldWithPath("memberId").description("회원 식별자"),
                 fieldWithPath("email").description("회원 이메일")),
-            errorCodes(
+            errorCodesWithCause(
                 errorWithCause(DUPLICATED_EMAIL, "이메일 중복 시 발생"),
                 errorWithCause(VERIFICATION_NOT_COMPLETED, "인증이 완료되지 않았을 떄 발생"),
                 errorWithCause(VERIFICATION_MISMATCH, "인증 정보(email, purpose)가 일치하지 않을 때 발생"))));
@@ -102,7 +102,7 @@ class MemberApiDocsTest extends RestdocsTest {
                 fieldWithPath("email").description("이메일"),
                 fieldWithPath("password").description("비밀번호"),
                 fieldWithPath("verificationId").description("인증이 완료된 인증 식별자")),
-            errorCodes(
+            errorCodesWithCause(
                 errorWithCause(MEMBER_NOT_FOUND, "회원이 아닐 시 발생"),
                 errorWithCause(VERIFICATION_NOT_COMPLETED, "인증이 완료되지 않았을 떄 발생"),
                 errorWithCause(VERIFICATION_MISMATCH, "인증 정보(email, purpose)가 일치하지 않을 때 발생"))));

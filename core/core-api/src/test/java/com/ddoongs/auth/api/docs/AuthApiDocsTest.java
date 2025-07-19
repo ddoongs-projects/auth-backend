@@ -4,7 +4,7 @@ import static com.ddoongs.auth.domain.shared.CoreErrorCode.EXPIRED_TOKEN;
 import static com.ddoongs.auth.domain.shared.CoreErrorCode.INVALID_TOKEN;
 import static com.ddoongs.auth.domain.shared.CoreErrorCode.MEMBER_NOT_FOUND;
 import static com.ddoongs.auth.domain.shared.CoreErrorCode.PASSWORD_MISMATCH;
-import static com.ddoongs.auth.restdocs.RestdocsUtils.errorCodes;
+import static com.ddoongs.auth.restdocs.RestdocsUtils.errorCodesWithCause;
 import static com.ddoongs.auth.restdocs.RestdocsUtils.errorWithCause;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -74,7 +74,7 @@ class AuthApiDocsTest extends RestdocsTest {
             responseFields(
                 fieldWithPath("accessToken").description("JWT access token"),
                 fieldWithPath("refreshToken").description("JWT refresh token")),
-            errorCodes(
+            errorCodesWithCause(
                 errorWithCause(PASSWORD_MISMATCH, "비밀번호가 다를 때 발생"),
                 errorWithCause(MEMBER_NOT_FOUND, "회원이 존재하지 않으면 발생"))));
   }
@@ -105,7 +105,7 @@ class AuthApiDocsTest extends RestdocsTest {
             responseFields(
                 fieldWithPath("accessToken").description("new JWT access token"),
                 fieldWithPath("refreshToken").description("JWT refresh token")),
-            errorCodes(
+            errorCodesWithCause(
                 errorWithCause(INVALID_TOKEN, "토큰이 올바르지 않을 때 발생"),
                 errorWithCause(EXPIRED_TOKEN, "토큰이 만료되었을 때 발생"))));
   }
@@ -126,7 +126,7 @@ class AuthApiDocsTest extends RestdocsTest {
             requestFields(
                 fieldWithPath("accessToken").description("JWT access token"),
                 fieldWithPath("refreshToken").description("JWT refresh token")),
-            errorCodes(
+            errorCodesWithCause(
                 errorWithCause(INVALID_TOKEN, "토큰이 올바르지 않을 때 발생"),
                 errorWithCause(EXPIRED_TOKEN, "토큰이 만료되었을 때 발생"))));
   }

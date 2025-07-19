@@ -6,11 +6,11 @@ public class RestdocsUtils {
 
   private RestdocsUtils() {}
 
-  public static ErrorCodeSnippet errorCodes(ApiErrorDetail... apiErrorDetails) {
-    return new ErrorCodeSnippet(apiErrorDetails);
+  public static ErrorCodeSnippet errorCodesWithCause(ApiErrorWithCause... apiErrorWithCauses) {
+    return new ErrorCodeSnippet(apiErrorWithCauses);
   }
 
-  public static ApiErrorDetail errorWithCause(CoreErrorCode code, String cause) {
-    return new ApiErrorDetail(code, cause);
+  public static ApiErrorWithCause errorWithCause(CoreErrorCode code, String cause) {
+    return new ApiErrorWithCause(code.name(), code.getDefaultMessage(), cause);
   }
 }

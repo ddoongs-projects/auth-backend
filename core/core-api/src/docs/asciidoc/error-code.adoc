@@ -1,0 +1,6 @@
+[[error-codes]]
+== 에러 코드 목록
+
+:module-name: core-api
+:op-name: error-codes
+include::{snippets}/{module-name}/{op-name}/all-error-codes.adoc[opts=optional]

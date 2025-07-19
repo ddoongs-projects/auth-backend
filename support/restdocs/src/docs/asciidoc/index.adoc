@@ -61,4 +61,5 @@ a|
 include::modules/core-api/verification.adoc[]
 include::modules/core-api/member.adoc[]
 include::modules/core-api/auth.adoc[]
+include::modules/core-api/error-code.adoc[]
 
