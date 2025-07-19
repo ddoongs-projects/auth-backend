@@ -73,19 +73,18 @@ public class JwtTokenProvider implements TokenProvider {
   }
 
   public String createAccessToken(Member member, Duration accessExpires) {
-    String subject = extractSubject(member);
-
     Instant now = Instant.now(clock);
     Instant exp = now.plus(accessExpires);
 
     String jti = UUID.randomUUID().toString();
-    return createToken(jti, subject, now, exp);
+    return createToken(jti, member, now, exp);
   }
 
-  private String createToken(String jti, String email, Instant now, Instant exp) {
+  private String createToken(String jti, Member member, Instant now, Instant exp) {
     return Jwts.builder()
         .id(jti)
-        .subject(email)
+        .subject(String.valueOf(member.getId()))
+        .claim("email", member.getEmail().address())
         .issuedAt(Date.from(now))
         .expiration(Date.from(exp))
         .signWith(key)
@@ -99,7 +98,7 @@ public class JwtTokenProvider implements TokenProvider {
     Instant now = Instant.now(clock);
     Instant exp = now.plus(refreshExpires);
 
-    String token = createToken(jti, subject, now, exp);
+    String token = createToken(jti, member, now, exp);
 
     return new RefreshToken(jti, subject, exp, token);
   }

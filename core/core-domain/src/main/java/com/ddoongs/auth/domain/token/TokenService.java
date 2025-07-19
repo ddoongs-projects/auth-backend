@@ -43,14 +43,13 @@ public class TokenService {
     tokenProvider.validate(refreshTokenValue);
 
     String jti = tokenProvider.extractJti(refreshTokenValue);
-    String email = tokenProvider.extractSubject(refreshTokenValue);
+    Long memberId = Long.parseLong(tokenProvider.extractSubject(refreshTokenValue));
 
     validateNotBlacklisted(jti);
 
     blacklistOldToken(jti);
 
-    Member member =
-        memberRepository.findByEmail(new Email(email)).orElseThrow(MemberNotFoundException::new);
+    Member member = memberRepository.find(memberId).orElseThrow(MemberNotFoundException::new);
 
     return issueNewTokenPair(member);
   }
