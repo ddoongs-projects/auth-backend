@@ -69,6 +69,7 @@ class MemberServiceTest {
     assertThat(member.getId()).isNotNull();
     assertThat(member.getEmail().address()).isEqualTo(email);
     assertThat(member.getDefaultDateTime()).isNotNull();
+    assertThat(member.getProvider()).isEqualTo(Provider.LOCAL);
 
     Verification verification1 = verificationFinder.find(verification.getId());
 
@@ -80,7 +81,8 @@ class MemberServiceTest {
   void registerFailDuplicatedEmail() {
     String email = "test@test.com";
 
-    memberRepository.save(new Member(null, new Email(email), new Password("123123123"), null));
+    memberRepository.save(
+        new Member(null, new Email(email), new Password("123123123"), Provider.LOCAL, null, null));
 
     Verification verification2 = ServiceTestSupport.prepareRegister(verificationService, email);
 
@@ -162,8 +164,8 @@ class MemberServiceTest {
     Email email = new Email("test@test.com");
     String password = "123qwe!@#";
 
-    Member member = memberRepository.save(
-        new Member(null, email, Password.of(password, passwordEncoder), null));
+    Member member = memberRepository.save(new Member(
+        null, email, Password.of(password, passwordEncoder), Provider.LOCAL, null, null));
 
     UUID verificationId = UUID.randomUUID();
 
@@ -177,8 +179,8 @@ class MemberServiceTest {
     Email email = new Email("test@test.com");
     String password = "123qwe!@#";
 
-    Member member = memberRepository.save(
-        new Member(null, email, Password.of(password, passwordEncoder), null));
+    Member member = memberRepository.save(new Member(
+        null, email, Password.of(password, passwordEncoder), Provider.LOCAL, null, null));
 
     Verification verification = verificationService.issue(
         new CreateVerification(email, VerificationPurpose.RESET_PASSWORD));
@@ -193,7 +195,8 @@ class MemberServiceTest {
     Email email = new Email("test@test.com");
     String password = "123qwe!@#";
 
-    Member member = new Member(null, email, Password.of(password, passwordEncoder), null);
+    Member member =
+        new Member(null, email, Password.of(password, passwordEncoder), Provider.LOCAL, null, null);
     member = memberRepository.save(member);
 
     Verification verification =
@@ -211,7 +214,8 @@ class MemberServiceTest {
     Email email = new Email("test@test.com");
     String password = "123qwe!@#";
 
-    Member member = new Member(null, email, Password.of(password, passwordEncoder), null);
+    Member member =
+        new Member(null, email, Password.of(password, passwordEncoder), Provider.LOCAL, null, null);
     member = memberRepository.save(member);
 
     Verification verification = verificationService.issue(
@@ -229,7 +233,8 @@ class MemberServiceTest {
     Email email = new Email("test@test.com");
     String password = "123qwe!@#";
 
-    Member member = new Member(null, email, Password.of(password, passwordEncoder), null);
+    Member member =
+        new Member(null, email, Password.of(password, passwordEncoder), Provider.LOCAL, null, null);
     member = memberRepository.save(member);
 
     Verification verification = verificationService.issue(

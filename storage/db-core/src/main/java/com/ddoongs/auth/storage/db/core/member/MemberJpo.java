@@ -2,10 +2,13 @@ package com.ddoongs.auth.storage.db.core.member;
 
 import com.ddoongs.auth.domain.member.Member;
 import com.ddoongs.auth.domain.member.Password;
+import com.ddoongs.auth.domain.member.Provider;
 import com.ddoongs.auth.domain.shared.DefaultDateTime;
 import com.ddoongs.auth.domain.shared.Email;
 import com.ddoongs.auth.storage.db.core.BaseEntity;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -25,8 +28,17 @@ public class MemberJpo extends BaseEntity {
 
   private String password;
 
+  @Enumerated(EnumType.STRING)
+  private Provider provider;
+
+  private String providerId;
+
   public static MemberJpo fromDomain(Member member) {
-    return new MemberJpo(member.getEmail().address(), member.getPassword().getPasswordHash());
+    return new MemberJpo(
+        member.getEmail().address(),
+        member.getPassword().getPasswordHash(),
+        member.getProvider(),
+        member.getProviderId());
   }
 
   public Member toDomain() {
@@ -34,6 +46,8 @@ public class MemberJpo extends BaseEntity {
         this.getId(),
         new Email(this.getEmail()),
         new Password(this.getPassword()),
+        this.provider,
+        this.providerId,
         new DefaultDateTime(this.getCreatedAt(), this.getUpdatedAt()));
   }
 

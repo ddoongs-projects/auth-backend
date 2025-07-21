@@ -13,6 +13,7 @@ import com.ddoongs.auth.domain.member.MemberService;
 import com.ddoongs.auth.domain.member.Password;
 import com.ddoongs.auth.domain.member.PasswordEncoder;
 import com.ddoongs.auth.domain.member.PasswordMismatchException;
+import com.ddoongs.auth.domain.member.Provider;
 import com.ddoongs.auth.domain.member.RegisterMember;
 import com.ddoongs.auth.domain.shared.Email;
 import com.ddoongs.auth.domain.verification.Verification;
@@ -98,8 +99,8 @@ class TokenServiceTest {
   @DisplayName("유효한 리프레시 토큰으로 재발급 시 새로운 토큰 쌍을 발급한다")
   void reissue_withValidToken_issuesNewTokenPair() {
     // given
-    Member member = memberRepository.save(
-        new Member(null, new Email("test@example.com"), new Password("password"), null));
+    Member member = memberRepository.save(new Member(
+        null, new Email("test@example.com"), new Password("password"), Provider.LOCAL, null, null));
     RefreshToken refreshToken = tokenIssuer.issueRefreshToken(member);
 
     // when
@@ -146,8 +147,8 @@ class TokenServiceTest {
   @DisplayName("토큰에 해당하는 사용자를 찾을 수 없으면 reissue는 실패한다.")
   void reissue_withNonExistentMember_throwsMemberNotFoundException() {
     // given
-    Member member =
-        new Member(999L, new Email("ghost@example.com"), new Password("password"), null);
+    Member member = new Member(
+        999L, new Email("ghost@example.com"), new Password("password"), Provider.LOCAL, null, null);
     RefreshToken refreshToken = tokenIssuer.issueRefreshToken(member);
 
     // when & then
@@ -159,7 +160,12 @@ class TokenServiceTest {
   @Test
   void logout() {
     Member member = memberRepository.save(new Member(
-        null, new Email("test@example.com"), Password.of("password!", passwordEncoder), null));
+        null,
+        new Email("test@example.com"),
+        Password.of("password!", passwordEncoder),
+        Provider.LOCAL,
+        null,
+        null));
     TokenPair tokenPair =
         tokenService.login(new LoginMember(member.getEmail().address(), "password!"));
 
@@ -178,7 +184,12 @@ class TokenServiceTest {
   void logout_withInvalidAccessToken_throwsInvalidTokenException() {
     // given
     Member member = memberRepository.save(new Member(
-        null, new Email("test@example.com"), Password.of("password!", passwordEncoder), null));
+        null,
+        new Email("test@example.com"),
+        Password.of("password!", passwordEncoder),
+        Provider.LOCAL,
+        null,
+        null));
     TokenPair tokenPair =
         tokenService.login(new LoginMember(member.getEmail().address(), "password!"));
 
@@ -193,7 +204,12 @@ class TokenServiceTest {
   void logout_withInvalidRefreshToken_throwsInvalidTokenException() {
     // given
     Member member = memberRepository.save(new Member(
-        null, new Email("test@example.com"), Password.of("password!", passwordEncoder), null));
+        null,
+        new Email("test@example.com"),
+        Password.of("password!", passwordEncoder),
+        Provider.LOCAL,
+        null,
+        null));
     TokenPair tokenPair =
         tokenService.login(new LoginMember(member.getEmail().address(), "password!"));
 

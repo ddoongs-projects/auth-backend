@@ -3,6 +3,7 @@ package com.ddoongs.auth.domain.support;
 import com.ddoongs.auth.domain.member.Member;
 import com.ddoongs.auth.domain.member.Password;
 import com.ddoongs.auth.domain.member.PasswordEncoder;
+import com.ddoongs.auth.domain.member.Provider;
 import com.ddoongs.auth.domain.member.RegisterMember;
 import com.ddoongs.auth.domain.shared.DefaultDateTime;
 import com.ddoongs.auth.domain.shared.Email;
@@ -24,11 +25,18 @@ public class MemberFixture {
         1L,
         new Email("duk9741@gmail.com"),
         Password.of("123asd!@#", passwordEncoder),
+        Provider.LOCAL,
+        null,
         DefaultDateTime.now());
   }
 
   public static Member member(String email, PasswordEncoder passwordEncoder) {
     return new Member(
-        1L, new Email(email), Password.of("123asd!@#", passwordEncoder), DefaultDateTime.now());
+        1L,
+        new Email(email),
+        Password.of("123asd!@#", passwordEncoder),
+        Provider.LOCAL,
+        null,
+        DefaultDateTime.now());
   }
 }

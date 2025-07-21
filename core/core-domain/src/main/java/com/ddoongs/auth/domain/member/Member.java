@@ -14,6 +14,8 @@ public class Member {
   private Long id;
   private Email email;
   private Password password;
+  private Provider provider;
+  private String providerId;
   private DefaultDateTime defaultDateTime;
 
   private Member() {}
@@ -23,7 +25,7 @@ public class Member {
 
     member.email = new Email(requireNonNull(registerMember.email()));
     member.password = Password.of(requireNonNull(registerMember.password()), passwordEncoder);
-
+    member.provider = Provider.LOCAL;
     return member;
   }
 

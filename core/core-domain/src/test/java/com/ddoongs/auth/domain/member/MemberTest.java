@@ -37,6 +37,7 @@ class MemberTest {
 
     assertThat(member.getEmail().address()).isEqualTo(registerMember.email());
     assertThat(member.getPassword().getPasswordHash()).isNotEqualTo(registerMember.password());
+    assertThat(member.getProvider()).isEqualTo(Provider.LOCAL);
   }
 
   @ParameterizedTest

@@ -80,7 +80,7 @@ class JwtTokenProviderTest {
   }
 
   @Test
-  @DisplayName("토큰에서 Subject(email)를 추출한다")
+  @DisplayName("토큰에서 Subject(id)를 추출한다")
   void extractSubject_success() {
     // given
     String accessToken = jwtTokenProvider.createAccessToken(testMember, Duration.ofDays(1));
@@ -89,7 +89,7 @@ class JwtTokenProviderTest {
     String subject = jwtTokenProvider.extractSubject(accessToken);
 
     // then
-    assertThat(subject).isEqualTo(testMember.getEmail().address());
+    assertThat(Long.parseLong(subject)).isEqualTo(testMember.getId());
   }
 
   @Test
@@ -130,7 +130,7 @@ class JwtTokenProviderTest {
     // then
     assertThat(accessToken).isNotNull();
     String subject = jwtTokenProvider.extractSubject(accessToken);
-    assertThat(subject).isEqualTo(testMember.getEmail().address());
+    assertThat(Long.parseLong(subject)).isEqualTo(testMember.getId());
   }
 
   @Test
@@ -146,7 +146,7 @@ class JwtTokenProviderTest {
     assertThat(refreshToken.subject()).isEqualTo(testMember.getEmail().address());
 
     String subject = jwtTokenProvider.extractSubject(refreshToken.token());
-    assertThat(subject).isEqualTo(testMember.getEmail().address());
+    assertThat(Long.parseLong(subject)).isEqualTo(testMember.getId());
     String jti = jwtTokenProvider.extractJti(refreshToken.token());
     assertThat(jti).isEqualTo(refreshToken.jti());
   }
