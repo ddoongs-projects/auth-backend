@@ -1,5 +1,9 @@
 include::{snippets}/{module-name}/{op-name}/http-request.adoc[opts=optional]
 
+include::{snippets}/{module-name}/{op-name}/path-parameters.adoc[opts=optional]
+
+include::{snippets}/{module-name}/{op-name}/query-parameters.adoc[opts=optional]
+
 include::{snippets}/{module-name}/{op-name}/request-fields.adoc[opts=optional]
 
 include::{snippets}/{module-name}/{op-name}/http-response.adoc[opts=optional]
