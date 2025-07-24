@@ -1,5 +1,6 @@
 package com.ddoongs.auth.domain.member;
 
+import java.util.UUID;
 import java.util.regex.Pattern;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -24,6 +25,11 @@ public class Password {
     Assert.isTrue(PASSWORD_PATTERN.matcher(password).matches(), "비밀번호 형식이 일치하지 않습니다.");
     String passwordHash = passwordEncoder.encode(password);
     return new Password(passwordHash);
+  }
+
+  public static Password ofRandom(PasswordEncoder passwordEncoder) {
+    String password = UUID.randomUUID().toString();
+    return new Password(passwordEncoder.encode(password));
   }
 
   public boolean matches(String password, PasswordEncoder passwordEncoder) {

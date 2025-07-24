@@ -21,7 +21,8 @@ public enum CoreErrorCode {
   MEMBER_NOT_FOUND(WARN, "회원을 찾을 수 없습니다."),
   UNAUTHORIZED(WARN, "인증이 필요합니다."),
   EXPIRED_TOKEN(WARN, "토큰이 만료되었습니다."),
-  INVALID_TOKEN(WARN, "토큰이 유효하지 않습니다.");
+  INVALID_TOKEN(WARN, "토큰이 유효하지 않습니다."),
+  INVALID_AUTH_CODE(WARN, "authCode가 유효하지 않습니다.");
 
   private final String defaultMessage;
   private final CoreErrorLevel level;
