@@ -5,6 +5,7 @@ import com.ddoongs.auth.domain.verification.Verification;
 import com.ddoongs.auth.domain.verification.VerificationFinder;
 import com.ddoongs.auth.domain.verification.VerificationPurpose;
 import com.ddoongs.auth.domain.verification.VerificationRepository;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -44,9 +45,35 @@ public class MemberService {
     Verification verification = verificationFinder.find(verificationId);
 
     verification.ensureValidFor(email, VerificationPurpose.RESET_PASSWORD);
+    verification.consume();
 
     member.changePassword(password, passwordEncoder);
 
+    verificationRepository.save(verification);
     return memberRepository.save(member);
+  }
+
+  @Transactional
+  public Member registerOAuth2(AppendProviderDetail appendProviderDetail) {
+    return memberRepository
+        .findOAuth2(appendProviderDetail.provider(), appendProviderDetail.providerId())
+        .or(() -> connectWithSameEmailMember(appendProviderDetail))
+        .orElseGet(() -> registerNewOAuth2Member(appendProviderDetail));
+  }
+
+  private Optional<Member> connectWithSameEmailMember(AppendProviderDetail providerUser) {
+    return memberRepository.findByEmail(new Email(providerUser.email())).map(existingMember -> {
+      existingMember.connectOAuth2(providerUser);
+      return memberRepository.save(existingMember);
+    });
+  }
+
+  private Member registerNewOAuth2Member(AppendProviderDetail providerUser) {
+    Member newMember = Member.registerOAuth2(providerUser, passwordEncoder);
+    return memberRepository.save(newMember);
+  }
+
+  public Member find(Long id) {
+    return memberRepository.find(id).orElseThrow(MemberNotFoundException::new);
   }
 }
