@@ -8,6 +8,7 @@ spring:
       - redis.yml
       - jwt.yml
       - db-core.yml
+      - oauth2.yml
   web.resources.add-mappings: false
   servlet:
     multipart:
