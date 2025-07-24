@@ -6,6 +6,7 @@ import com.ddoongs.auth.domain.member.MemberRepository;
 import com.ddoongs.auth.domain.member.PasswordEncoder;
 import com.ddoongs.auth.domain.shared.Email;
 import java.time.Clock;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +22,7 @@ public class TokenService {
   private final MemberRepository memberRepository;
   private final TokenIssuer tokenIssuer;
   private final Clock clock;
+  private final TokenExchangeRepository tokenExchangeRepository;
 
   @Transactional
   public TokenPair login(LoginMember loginMember) {
@@ -87,5 +89,29 @@ public class TokenService {
 
     refreshTokenRepository.delete(jti);
     blacklistTokenRepository.save(jti, oldToken.remainingTtl(clock));
+  }
+
+  @Transactional
+  public TokenExchange prepareTokenExchange(PrepareTokenExchange prepareTokenExchange) {
+    Member member = memberRepository
+        .findOAuth2(prepareTokenExchange.provider(), prepareTokenExchange.providerId())
+        .orElseThrow(MemberNotFoundException::new);
+
+    UUID authCode = UUID.randomUUID();
+
+    String accessToken = tokenIssuer.issueAccessToken(member);
+    RefreshToken refreshToken = tokenIssuer.issueRefreshToken(member);
+    TokenPair tokenPair = new TokenPair(accessToken, refreshToken);
+
+    TokenExchange tokenExchange = new TokenExchange(authCode, tokenPair);
+
+    return tokenExchangeRepository.save(tokenExchange);
+  }
+
+  @Transactional
+  public TokenPair exchangeToken(UUID authCode) {
+    TokenExchange tokenExchange =
+        tokenExchangeRepository.find(authCode).orElseThrow(InvalidAuthCodeException::new);
+    return tokenExchange.tokenPair();
   }
 }
