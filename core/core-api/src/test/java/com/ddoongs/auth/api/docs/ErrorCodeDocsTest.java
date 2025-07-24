@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 
 import com.ddoongs.auth.api.ApiErrorCode;
+import com.ddoongs.auth.api.docs.controller.ErrorCodeController;
 import com.ddoongs.auth.domain.shared.CoreErrorCode;
 import com.ddoongs.auth.restdocs.AllErrorCodeSnippet;
 import com.ddoongs.auth.restdocs.ApiError;
