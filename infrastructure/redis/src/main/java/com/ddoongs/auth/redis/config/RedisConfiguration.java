@@ -1,6 +1,7 @@
 package com.ddoongs.auth.redis.config;
 
 import com.ddoongs.auth.domain.token.RefreshToken;
+import com.ddoongs.auth.domain.token.TokenExchange;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -20,8 +21,8 @@ public class RedisConfiguration {
     return new LettuceConnectionFactory();
   }
 
-  @Bean // RefreshToken 전용 RedisTemplate Bean 등록
-  public RedisTemplate<String, RefreshToken> redisTemplate(
+  @Bean
+  public RedisTemplate<String, RefreshToken> refreshTokenRedisTemplate(
       RedisConnectionFactory connectionFactory) {
     RedisTemplate<String, RefreshToken> template = new RedisTemplate<>();
     template.setConnectionFactory(connectionFactory); // Redis 연결 팩토리 설정
@@ -38,6 +39,30 @@ public class RedisConfiguration {
 
     Jackson2JsonRedisSerializer<RefreshToken> serializer =
         new Jackson2JsonRedisSerializer<>(objectMapper, RefreshToken.class);
+
+    template.setValueSerializer(serializer);
+    template.setHashValueSerializer(serializer);
+
+    template.afterPropertiesSet(); // 프로퍼티 주입 후 초기화
+    return template; // 완성된 RedisTemplate 반환
+  }
+
+  @Bean // RefreshToken 전용 RedisTemplate Bean 등록
+  public RedisTemplate<String, TokenExchange> tokenExchangeRedisTemplate(
+      RedisConnectionFactory connectionFactory) {
+    RedisTemplate<String, TokenExchange> template = new RedisTemplate<>();
+    template.setConnectionFactory(connectionFactory); // Redis 연결 팩토리 설정
+
+    // KeySerializer: Redis 키를 문자열(JTI)로 직렬화
+    template.setKeySerializer(new StringRedisSerializer());
+    template.setHashKeySerializer(new StringRedisSerializer());
+
+    ObjectMapper objectMapper = new ObjectMapper();
+    objectMapper.registerModule(new JavaTimeModule());
+    objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+    Jackson2JsonRedisSerializer<TokenExchange> serializer =
+        new Jackson2JsonRedisSerializer<>(objectMapper, TokenExchange.class);
 
     template.setValueSerializer(serializer);
     template.setHashValueSerializer(serializer);
