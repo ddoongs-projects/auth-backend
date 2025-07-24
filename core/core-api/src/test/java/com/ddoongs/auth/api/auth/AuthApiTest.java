@@ -15,6 +15,8 @@ import com.ddoongs.auth.domain.token.BlacklistTokenRepository;
 import com.ddoongs.auth.domain.token.LoginMember;
 import com.ddoongs.auth.domain.token.RefreshToken;
 import com.ddoongs.auth.domain.token.RefreshTokenRepository;
+import com.ddoongs.auth.domain.token.TokenExchange;
+import com.ddoongs.auth.domain.token.TokenExchangeRepository;
 import com.ddoongs.auth.domain.token.TokenPair;
 import com.ddoongs.auth.domain.token.TokenProvider;
 import com.ddoongs.auth.domain.token.TokenService;
@@ -27,6 +29,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.UnsupportedEncodingException;
 import java.time.Duration;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -75,6 +78,9 @@ class AuthApiTest {
 
   @Qualifier("blacklistTokenRepository") @Autowired
   private BlacklistTokenRepository blacklistTokenRepository;
+
+  @Autowired
+  private TokenExchangeRepository tokenExchangeRepository;
 
   @BeforeEach
   void setup() {
@@ -271,5 +277,53 @@ class AuthApiTest {
         .hasStatus(HttpStatus.UNAUTHORIZED)
         .bodyJson()
         .hasPathSatisfying("$.code", equalsTo(CoreErrorCode.INVALID_TOKEN.toString()));
+  }
+
+  @DisplayName("토큰 교환을 진행한다.")
+  @Test
+  void exchangeToken() throws JsonProcessingException, UnsupportedEncodingException {
+    String email = "test@email.com";
+    String password = "123qwe!@#";
+
+    registerMember(email, password);
+
+    TokenPair tokenPair = tokenService.login(new LoginMember(email, password));
+    UUID authCode = UUID.randomUUID();
+    TokenExchange tokenExchange = new TokenExchange(authCode, tokenPair);
+    tokenExchangeRepository.save(tokenExchange);
+
+    final var request = new TokenExchangeRequest(authCode);
+
+    final var result = mvc.post()
+        .uri("/auth/token/exchange")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(request))
+        .exchange();
+
+    assertThat(result)
+        .hasStatusOk()
+        .bodyJson()
+        .hasPathSatisfying("$.accessToken", notNull())
+        .hasPathSatisfying("$.refreshToken", notNull());
+
+    assertThat(tokenExchangeRepository.find(authCode)).isEmpty();
+  }
+
+  @DisplayName("유효하지 않은 authCode로 토큰 교환에 실패한다.")
+  @Test
+  void exchangeTokenFailWithInvalidAuthCode() throws JsonProcessingException {
+    UUID authCode = UUID.randomUUID();
+    final var request = new TokenExchangeRequest(authCode);
+
+    final var result = mvc.post()
+        .uri("/auth/token/exchange")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(request))
+        .exchange();
+
+    assertThat(result)
+        .hasStatus(HttpStatus.UNAUTHORIZED)
+        .bodyJson()
+        .hasPathSatisfying("$.code", equalsTo(CoreErrorCode.INVALID_AUTH_CODE.toString()));
   }
 }
