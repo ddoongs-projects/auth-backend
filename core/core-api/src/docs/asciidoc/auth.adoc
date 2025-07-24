@@ -21,3 +21,11 @@ include::snippets/docs.adoc[]
 :module-name: core-api
 :op-name: auth-logout
 include::snippets/docs.adoc[]
+
+[[auth-token-exchange]]
+=== 인증 토큰 교환
+
+:module-name: core-api
+:op-name: auth-token-exchange
+include::snippets/docs.adoc[]
+
