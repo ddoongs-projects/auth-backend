@@ -4,6 +4,7 @@ import com.ddoongs.auth.domain.member.Member;
 import com.ddoongs.auth.domain.member.MemberService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,5 +24,10 @@ public class MemberApi {
   @PostMapping("/members/reset-password")
   public void resetPassword(@RequestBody @Valid ResetPasswordRequest request) {
     memberService.resetPassword(request.toEmail(), request.password(), request.verificationId());
+  }
+
+  @GetMapping("/members/me")
+  public MemberResponse memberResponse(RequestMember requestMember) {
+    return MemberResponse.of(memberService.find(requestMember.id()));
   }
 }
