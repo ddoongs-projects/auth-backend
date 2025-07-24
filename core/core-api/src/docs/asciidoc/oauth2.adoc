@@ -1,0 +1,22 @@
+[[oauth2]]
+== OAuth2 API
+
+OAuth2를 통한 소셜 로그인을 지원합니다.
+현재 Google, Naver, Kakao 로그인을 지원합니다.
+
+=== OAuth2 로그인 플로우
+
+. 클라이언트가 `/oauth2/authorization/{provider}`로 GET 요청
+. Spring Security가 OAuth2 제공자의 인증 페이지로 리다이렉트
+. 사용자가 OAuth2 제공자에서 인증 완료
+. OAuth2 제공자가 `/login/oauth2/code/{provider}`로 콜백
+. `OAuth2AuthenticationSuccessHandler`가 처리하여 authCode 생성
+. 프론트엔드로 리다이렉트 (authCode 포함): `{FRONTEND_BASE_URL}/oauth2/code?authCode={authCode}`
+. 프론트엔드가 `/auth/token/exchange`로 authCode를 전송하여 JWT 토큰 획득
+
+[[oauth2-authorization]]
+=== OAuth2 로그인 시작
+
+:module-name: core-api
+:op-name: oauth2-authorization
+include::snippets/docs.adoc[]

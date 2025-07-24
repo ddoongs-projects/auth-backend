@@ -1,4 +1,4 @@
-package com.ddoongs.auth.api.docs;
+package com.ddoongs.auth.api.docs.controller;
 
 import com.ddoongs.auth.api.ApiErrorCode;
 import com.ddoongs.auth.domain.shared.CoreErrorCode;
