@@ -1,6 +1,7 @@
 package com.ddoongs.auth.api.docs;
 
 import static com.ddoongs.auth.domain.shared.CoreErrorCode.EXPIRED_TOKEN;
+import static com.ddoongs.auth.domain.shared.CoreErrorCode.INVALID_AUTH_CODE;
 import static com.ddoongs.auth.domain.shared.CoreErrorCode.INVALID_TOKEN;
 import static com.ddoongs.auth.domain.shared.CoreErrorCode.MEMBER_NOT_FOUND;
 import static com.ddoongs.auth.domain.shared.CoreErrorCode.PASSWORD_MISMATCH;
@@ -18,6 +19,7 @@ import com.ddoongs.auth.api.auth.AuthApi;
 import com.ddoongs.auth.api.auth.MemberLoginRequest;
 import com.ddoongs.auth.api.auth.MemberLogoutRequest;
 import com.ddoongs.auth.api.auth.ReissueRequest;
+import com.ddoongs.auth.api.auth.TokenExchangeRequest;
 import com.ddoongs.auth.domain.token.RefreshToken;
 import com.ddoongs.auth.domain.token.TokenPair;
 import com.ddoongs.auth.domain.token.TokenService;
@@ -129,5 +131,34 @@ class AuthApiDocsTest extends RestdocsTest {
             errorCodesWithCause(
                 errorWithCause(INVALID_TOKEN, "토큰이 올바르지 않을 때 발생"),
                 errorWithCause(EXPIRED_TOKEN, "토큰이 만료되었을 때 발생"))));
+  }
+
+  @DisplayName("OAuth2 토큰 교환 API 문서 생성")
+  @Test
+  void exchange() throws Exception {
+    final var request = new TokenExchangeRequest(UUID.randomUUID());
+
+    given(tokenService.exchangeToken(any()))
+        .willReturn(new TokenPair(
+            "sample.access.token",
+            new RefreshToken(
+                UUID.randomUUID().toString(),
+                "test@email.com",
+                Instant.now().plus(Duration.ofDays(7)),
+                "sample.refresh.token")));
+
+    assertThat(mvc.post()
+            .uri("/auth/token/exchange")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request))
+            .exchange())
+        .hasStatusOk()
+        .apply(document(
+            "auth-token-exchange",
+            requestFields(fieldWithPath("authCode").description("OAuth2 인증 코드 (UUID)")),
+            responseFields(
+                fieldWithPath("accessToken").description("JWT access token"),
+                fieldWithPath("refreshToken").description("JWT refresh token")),
+            errorCodesWithCause(errorWithCause(INVALID_AUTH_CODE, "인증 코드가 유효하지 않을 때 발생"))));
   }
 }

@@ -30,4 +30,10 @@ public class AuthApi {
   public void logout(@RequestBody @Valid MemberLogoutRequest request) {
     tokenService.logout(request.toLogoutMember());
   }
+
+  @PostMapping("/auth/token/exchange")
+  public TokenResponse exchange(@RequestBody @Valid TokenExchangeRequest request) {
+    TokenPair tokenPair = tokenService.exchangeToken(request.authCode());
+    return TokenResponse.of(tokenPair);
+  }
 }
