@@ -12,4 +12,6 @@ public interface MemberRepository {
   boolean existsByEmail(Email email);
 
   Optional<Member> findByEmail(Email email);
+
+  Optional<Member> findOAuth2(Provider provider, String providerId);
 }
