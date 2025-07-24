@@ -3,6 +3,7 @@ package com.ddoongs.auth.domain.support;
 import com.ddoongs.auth.domain.member.PasswordEncoder;
 import com.ddoongs.auth.domain.token.BlacklistTokenRepository;
 import com.ddoongs.auth.domain.token.RefreshTokenRepository;
+import com.ddoongs.auth.domain.token.TokenExchangeRepository;
 import com.ddoongs.auth.domain.verification.VerificationCodeGenerator;
 
 public class TestFixture {
@@ -30,5 +31,9 @@ public class TestFixture {
 
   public static BlacklistTokenRepository blacklistTokenRepository() {
     return new FakeBlacklistTokenRepository();
+  }
+
+  public static TokenExchangeRepository tokenExchangeRepository() {
+    return new FakeTokenExchangeRepository();
   }
 }

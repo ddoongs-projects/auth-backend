@@ -5,6 +5,7 @@ import com.ddoongs.auth.domain.support.FakeClock;
 import com.ddoongs.auth.domain.support.TestFixture;
 import com.ddoongs.auth.domain.token.BlacklistTokenRepository;
 import com.ddoongs.auth.domain.token.RefreshTokenRepository;
+import com.ddoongs.auth.domain.token.TokenExchangeRepository;
 import com.ddoongs.auth.domain.verification.VerificationCodeGenerator;
 import java.time.Clock;
 import java.time.Instant;
@@ -34,6 +35,11 @@ public class AuthTestConfiguration {
   @Bean
   public BlacklistTokenRepository blacklistTokenRepository() {
     return TestFixture.blacklistTokenRepository();
+  }
+
+  @Bean
+  public TokenExchangeRepository tokenExchangeRepository() {
+    return TestFixture.tokenExchangeRepository();
   }
 
   @Primary
