@@ -112,6 +112,7 @@ public class TokenService {
   public TokenPair exchangeToken(UUID authCode) {
     TokenExchange tokenExchange =
         tokenExchangeRepository.find(authCode).orElseThrow(InvalidAuthCodeException::new);
+    tokenExchangeRepository.delete(authCode);
     return tokenExchange.tokenPair();
   }
 }
