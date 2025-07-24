@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.ddoongs.auth.TestApplication;
 import com.ddoongs.auth.domain.AuthTestConfiguration;
 import com.ddoongs.auth.domain.ServiceTestSupport;
+import com.ddoongs.auth.domain.member.AppendProviderDetail;
 import com.ddoongs.auth.domain.member.Member;
 import com.ddoongs.auth.domain.member.MemberNotFoundException;
 import com.ddoongs.auth.domain.member.MemberRepository;
@@ -19,6 +20,8 @@ import com.ddoongs.auth.domain.shared.Email;
 import com.ddoongs.auth.domain.verification.Verification;
 import com.ddoongs.auth.domain.verification.VerificationService;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +60,9 @@ class TokenServiceTest {
 
   @Autowired
   private PasswordEncoder passwordEncoder;
+
+  @Autowired
+  private TokenExchangeRepository tokenExchangeRepository;
 
   @DisplayName("로그인을 할 수 있다.")
   @Test
@@ -100,7 +106,7 @@ class TokenServiceTest {
   void reissue_withValidToken_issuesNewTokenPair() {
     // given
     Member member = memberRepository.save(new Member(
-        null, new Email("test@example.com"), new Password("password"), Provider.LOCAL, null, null));
+        null, new Email("test@example.com"), new Password("password"), new ArrayList<>(), null));
     RefreshToken refreshToken = tokenIssuer.issueRefreshToken(member);
 
     // when
@@ -148,7 +154,7 @@ class TokenServiceTest {
   void reissue_withNonExistentMember_throwsMemberNotFoundException() {
     // given
     Member member = new Member(
-        999L, new Email("ghost@example.com"), new Password("password"), Provider.LOCAL, null, null);
+        999L, new Email("ghost@example.com"), new Password("password"), new ArrayList<>(), null);
     RefreshToken refreshToken = tokenIssuer.issueRefreshToken(member);
 
     // when & then
@@ -163,8 +169,7 @@ class TokenServiceTest {
         null,
         new Email("test@example.com"),
         Password.of("password!", passwordEncoder),
-        Provider.LOCAL,
-        null,
+        new ArrayList<>(),
         null));
     TokenPair tokenPair =
         tokenService.login(new LoginMember(member.getEmail().address(), "password!"));
@@ -187,8 +192,7 @@ class TokenServiceTest {
         null,
         new Email("test@example.com"),
         Password.of("password!", passwordEncoder),
-        Provider.LOCAL,
-        null,
+        new ArrayList<>(),
         null));
     TokenPair tokenPair =
         tokenService.login(new LoginMember(member.getEmail().address(), "password!"));
@@ -207,8 +211,7 @@ class TokenServiceTest {
         null,
         new Email("test@example.com"),
         Password.of("password!", passwordEncoder),
-        Provider.LOCAL,
-        null,
+        new ArrayList<>(),
         null));
     TokenPair tokenPair =
         tokenService.login(new LoginMember(member.getEmail().address(), "password!"));
@@ -217,5 +220,113 @@ class TokenServiceTest {
     assertThatThrownBy(
             () -> tokenService.logout(new LogoutMember(tokenPair.accessToken(), "invalid-token")))
         .isInstanceOf(InvalidTokenException.class);
+  }
+
+  @DisplayName("OAuth2 회원의 토큰 교환을 준비할 수 있다")
+  @Test
+  void prepareTokenExchange() {
+    // given
+    AppendProviderDetail providerDetail =
+        new AppendProviderDetail(Provider.GOOGLE, "google123", "oauth@test.com");
+    Member member = memberService.registerOAuth2(providerDetail);
+
+    PrepareTokenExchange prepareTokenExchange =
+        new PrepareTokenExchange(Provider.GOOGLE, "google123");
+
+    // when
+    TokenExchange tokenExchange = tokenService.prepareTokenExchange(prepareTokenExchange);
+
+    // then
+    assertThat(tokenExchange.authCode()).isNotNull();
+    assertThat(tokenExchange.tokenPair()).isNotNull();
+    assertThat(tokenExchange.tokenPair().accessToken()).isNotNull();
+    assertThat(tokenExchange.tokenPair().refreshToken()).isNotNull();
+
+    // verify saved in repository
+    assertThat(tokenExchangeRepository.find(tokenExchange.authCode())).isPresent();
+  }
+
+  @DisplayName("존재하지 않는 OAuth2 회원의 토큰 교환 준비 시 예외가 발생한다")
+  @Test
+  void prepareTokenExchange_memberNotFound() {
+    // given
+    PrepareTokenExchange prepareTokenExchange =
+        new PrepareTokenExchange(Provider.GOOGLE, "nonexistent123");
+
+    // when & then
+    assertThatThrownBy(() -> tokenService.prepareTokenExchange(prepareTokenExchange))
+        .isInstanceOf(MemberNotFoundException.class);
+  }
+
+  @DisplayName("유효한 인증 코드로 토큰을 교환할 수 있다")
+  @Test
+  void exchangeToken() {
+    // given
+    AppendProviderDetail providerDetail =
+        new AppendProviderDetail(Provider.GOOGLE, "google123", "oauth@test.com");
+    Member member = memberService.registerOAuth2(providerDetail);
+
+    PrepareTokenExchange prepareTokenExchange =
+        new PrepareTokenExchange(Provider.GOOGLE, "google123");
+    TokenExchange preparedExchange = tokenService.prepareTokenExchange(prepareTokenExchange);
+
+    // when
+    TokenPair exchangedTokenPair = tokenService.exchangeToken(preparedExchange.authCode());
+
+    // then
+    assertThat(exchangedTokenPair).isNotNull();
+    assertThat(exchangedTokenPair.accessToken())
+        .isEqualTo(preparedExchange.tokenPair().accessToken());
+    assertThat(exchangedTokenPair.refreshToken())
+        .isEqualTo(preparedExchange.tokenPair().refreshToken());
+  }
+
+  @DisplayName("존재하지 않는 인증 코드로 토큰 교환 시 예외가 발생한다")
+  @Test
+  void exchangeToken_invalidAuthCode() {
+    // given
+    UUID invalidAuthCode = UUID.randomUUID();
+
+    // when & then
+    assertThatThrownBy(() -> tokenService.exchangeToken(invalidAuthCode))
+        .isInstanceOf(InvalidAuthCodeException.class);
+  }
+
+  @DisplayName("여러 OAuth2 제공자를 가진 회원의 토큰 교환을 준비할 수 있다")
+  @Test
+  void prepareTokenExchange_withMultipleProviders() {
+    // given
+    String email = "multi@test.com";
+    Member member = memberRepository.save(new Member(
+        null,
+        new Email(email),
+        Password.of("password123", passwordEncoder),
+        new ArrayList<>(),
+        null));
+
+    AppendProviderDetail googleDetail =
+        new AppendProviderDetail(Provider.GOOGLE, "google123", email);
+    AppendProviderDetail kakaoDetail = new AppendProviderDetail(Provider.KAKAO, "kakao456", email);
+
+    memberService.registerOAuth2(googleDetail);
+    memberService.registerOAuth2(kakaoDetail);
+
+    // when
+    PrepareTokenExchange googlePrepare = new PrepareTokenExchange(Provider.GOOGLE, "google123");
+    PrepareTokenExchange kakaoPrepare = new PrepareTokenExchange(Provider.KAKAO, "kakao456");
+
+    TokenExchange googleExchange = tokenService.prepareTokenExchange(googlePrepare);
+    TokenExchange kakaoExchange = tokenService.prepareTokenExchange(kakaoPrepare);
+
+    // then
+    assertThat(googleExchange.authCode()).isNotEqualTo(kakaoExchange.authCode());
+    assertThat(googleExchange.tokenPair()).isNotEqualTo(kakaoExchange.tokenPair());
+
+    // both should be exchangeable
+    TokenPair googleTokens = tokenService.exchangeToken(googleExchange.authCode());
+    TokenPair kakaoTokens = tokenService.exchangeToken(kakaoExchange.authCode());
+
+    assertThat(googleTokens).isNotNull();
+    assertThat(kakaoTokens).isNotNull();
   }
 }

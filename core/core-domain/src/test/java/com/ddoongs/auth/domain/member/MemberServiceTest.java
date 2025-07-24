@@ -20,6 +20,7 @@ import com.ddoongs.auth.domain.verification.VerificationNotFoundException;
 import com.ddoongs.auth.domain.verification.VerificationPurpose;
 import com.ddoongs.auth.domain.verification.VerificationService;
 import com.ddoongs.auth.domain.verification.VerificationStatus;
+import java.util.ArrayList;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -69,7 +70,7 @@ class MemberServiceTest {
     assertThat(member.getId()).isNotNull();
     assertThat(member.getEmail().address()).isEqualTo(email);
     assertThat(member.getDefaultDateTime()).isNotNull();
-    assertThat(member.getProvider()).isEqualTo(Provider.LOCAL);
+    assertThat(member.getProviderDetails()).isEmpty();
 
     Verification verification1 = verificationFinder.find(verification.getId());
 
@@ -82,7 +83,7 @@ class MemberServiceTest {
     String email = "test@test.com";
 
     memberRepository.save(
-        new Member(null, new Email(email), new Password("123123123"), Provider.LOCAL, null, null));
+        new Member(null, new Email(email), new Password("123123123"), new ArrayList<>(), null));
 
     Verification verification2 = ServiceTestSupport.prepareRegister(verificationService, email);
 
@@ -164,8 +165,8 @@ class MemberServiceTest {
     Email email = new Email("test@test.com");
     String password = "123qwe!@#";
 
-    Member member = memberRepository.save(new Member(
-        null, email, Password.of(password, passwordEncoder), Provider.LOCAL, null, null));
+    Member member = memberRepository.save(
+        new Member(null, email, Password.of(password, passwordEncoder), new ArrayList<>(), null));
 
     UUID verificationId = UUID.randomUUID();
 
@@ -179,8 +180,8 @@ class MemberServiceTest {
     Email email = new Email("test@test.com");
     String password = "123qwe!@#";
 
-    Member member = memberRepository.save(new Member(
-        null, email, Password.of(password, passwordEncoder), Provider.LOCAL, null, null));
+    Member member = memberRepository.save(
+        new Member(null, email, Password.of(password, passwordEncoder), new ArrayList<>(), null));
 
     Verification verification = verificationService.issue(
         new CreateVerification(email, VerificationPurpose.RESET_PASSWORD));
@@ -196,7 +197,7 @@ class MemberServiceTest {
     String password = "123qwe!@#";
 
     Member member =
-        new Member(null, email, Password.of(password, passwordEncoder), Provider.LOCAL, null, null);
+        new Member(null, email, Password.of(password, passwordEncoder), new ArrayList<>(), null);
     member = memberRepository.save(member);
 
     Verification verification =
@@ -215,7 +216,7 @@ class MemberServiceTest {
     String password = "123qwe!@#";
 
     Member member =
-        new Member(null, email, Password.of(password, passwordEncoder), Provider.LOCAL, null, null);
+        new Member(null, email, Password.of(password, passwordEncoder), new ArrayList<>(), null);
     member = memberRepository.save(member);
 
     Verification verification = verificationService.issue(
@@ -234,7 +235,7 @@ class MemberServiceTest {
     String password = "123qwe!@#";
 
     Member member =
-        new Member(null, email, Password.of(password, passwordEncoder), Provider.LOCAL, null, null);
+        new Member(null, email, Password.of(password, passwordEncoder), new ArrayList<>(), null);
     member = memberRepository.save(member);
 
     Verification verification = verificationService.issue(
@@ -251,5 +252,105 @@ class MemberServiceTest {
 
     assertThatCode(() -> foundMember.validatePassword(newPassword, passwordEncoder))
         .doesNotThrowAnyException();
+  }
+
+  @DisplayName("OAuth2로 새로운 회원을 등록한다.")
+  @Test
+  void registerOAuth2_newMember() {
+    AppendProviderDetail providerDetail =
+        new AppendProviderDetail(Provider.GOOGLE, "google123", "oauth@test.com");
+
+    Member registeredMember = memberService.registerOAuth2(providerDetail);
+
+    assertThat(registeredMember.getId()).isNotNull();
+    assertThat(registeredMember.getEmail().address()).isEqualTo("oauth@test.com");
+    assertThat(registeredMember.getProviderDetails()).hasSize(1);
+    assertThat(registeredMember.getProviderDetails().get(0).getProvider())
+        .isEqualTo(Provider.GOOGLE);
+    assertThat(registeredMember.getProviderDetails().get(0).getProviderId()).isEqualTo("google123");
+  }
+
+  @DisplayName("이미 등록된 OAuth2 회원이면 기존 회원을 반환한다.")
+  @Test
+  void registerOAuth2_existingOAuth2Member() {
+    AppendProviderDetail providerDetail =
+        new AppendProviderDetail(Provider.GOOGLE, "google123", "oauth@test.com");
+
+    Member firstMember = memberService.registerOAuth2(providerDetail);
+    Member secondMember = memberService.registerOAuth2(providerDetail);
+
+    assertThat(firstMember.getId()).isEqualTo(secondMember.getId());
+    assertThat(secondMember.getProviderDetails()).hasSize(1);
+  }
+
+  @DisplayName("동일한 이메일을 가진 기존 회원에 OAuth2 정보를 연결한다.")
+  @Test
+  void registerOAuth2_connectToExistingEmailMember() {
+    String email = "existing@test.com";
+    Member existingMember = memberRepository.save(new Member(
+        null,
+        new Email(email),
+        Password.of("password123", passwordEncoder),
+        new ArrayList<>(),
+        null));
+
+    AppendProviderDetail providerDetail =
+        new AppendProviderDetail(Provider.GOOGLE, "google123", email);
+
+    Member connectedMember = memberService.registerOAuth2(providerDetail);
+
+    assertThat(connectedMember.getId()).isEqualTo(existingMember.getId());
+    assertThat(connectedMember.getProviderDetails()).hasSize(1);
+    assertThat(connectedMember.getProviderDetails().get(0).getProvider())
+        .isEqualTo(Provider.GOOGLE);
+    assertThat(connectedMember.getProviderDetails().get(0).getProviderId()).isEqualTo("google123");
+  }
+
+  @DisplayName("동일한 이메일 회원에 여러 OAuth2 제공자를 연결할 수 있다.")
+  @Test
+  void registerOAuth2_multipleProvidersToSameMember() {
+    String email = "multi@test.com";
+    Member existingMember = memberRepository.save(new Member(
+        null,
+        new Email(email),
+        Password.of("password123", passwordEncoder),
+        new ArrayList<>(),
+        null));
+
+    AppendProviderDetail googleDetail =
+        new AppendProviderDetail(Provider.GOOGLE, "google123", email);
+    AppendProviderDetail kakaoDetail = new AppendProviderDetail(Provider.KAKAO, "kakao456", email);
+
+    Member googleConnected = memberService.registerOAuth2(googleDetail);
+    Member kakaoConnected = memberService.registerOAuth2(kakaoDetail);
+
+    assertThat(googleConnected.getId()).isEqualTo(existingMember.getId());
+    assertThat(kakaoConnected.getId()).isEqualTo(existingMember.getId());
+    assertThat(kakaoConnected.getProviderDetails()).hasSize(2);
+    assertThat(kakaoConnected.getProviderDetails())
+        .extracting(ProviderDetail::getProvider)
+        .containsExactlyInAnyOrder(Provider.GOOGLE, Provider.KAKAO);
+  }
+
+  @DisplayName("이미 연결된 OAuth2 정보로 다시 등록하면 기존 회원을 반환한다.")
+  @Test
+  void registerOAuth2_alreadyConnectedProvider() {
+    String email = "connected@test.com";
+    Member existingMember = memberRepository.save(new Member(
+        null,
+        new Email(email),
+        Password.of("password123", passwordEncoder),
+        new ArrayList<>(),
+        null));
+
+    AppendProviderDetail providerDetail =
+        new AppendProviderDetail(Provider.GOOGLE, "google123", email);
+
+    Member firstConnect = memberService.registerOAuth2(providerDetail);
+    Member secondConnect = memberService.registerOAuth2(providerDetail);
+
+    assertThat(firstConnect.getId()).isEqualTo(existingMember.getId());
+    assertThat(secondConnect.getId()).isEqualTo(existingMember.getId());
+    assertThat(secondConnect.getProviderDetails()).hasSize(1);
   }
 }
