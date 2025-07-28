@@ -37,3 +37,4 @@ out/
 .vscode/
 /support/restdocs/src/docs/asciidoc/modules/
 .env
+.claude/settings.local.json
