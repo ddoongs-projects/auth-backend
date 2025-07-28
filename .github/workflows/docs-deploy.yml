@@ -159,7 +159,7 @@ jobs:
           SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
           IMAGE_TAG="${{ github.ref_name }}-${SHORT_SHA}"
           # sed를 사용하여 이미지 태그 교체
-          sed -i "s|image: .*|image: ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE_NAME }}:${IMAGE_TAG}|g" ${{ env.GITOPS_PATH }}/docs.yaml
+          sed -i "s|image: .*|image: ${{ env.DOCKER_REGISTRY }}/${{ env.DOCS_IMAGE_NAME }}:${IMAGE_TAG}|g" ${{ env.GITOPS_PATH }}/docs.yaml
 
       # 변경사항 커밋 및 푸시
       - name: Commit and push changes
