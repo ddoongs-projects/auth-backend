@@ -1,8 +1,8 @@
 package com.ddoongs.auth.storage.db.core.config;
 
+import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import javax.sql.DataSource;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,15 +12,12 @@ public class CoreDataSourceConfig {
 
   @Bean
   @ConfigurationProperties(prefix = "storage.datasource.core")
-  public DataSourceProperties coreDataSourceProperties() {
-    return new DataSourceProperties();
+  public HikariConfig coreHikariConfig() {
+    return new HikariConfig();
   }
 
   @Bean(name = "coreDataSource")
-  public DataSource coreDataSource() {
-    return coreDataSourceProperties()
-        .initializeDataSourceBuilder()
-        .type(HikariDataSource.class)
-        .build();
+  public HikariDataSource coreDataSource(@Qualifier("coreHikariConfig") HikariConfig hikariConfig) {
+    return new HikariDataSource(hikariConfig);
   }
 }
